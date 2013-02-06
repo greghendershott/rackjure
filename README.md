@@ -23,12 +23,52 @@ useful ideas from Clojure for use in Racket.
 Although similar to the thrush combinatior, these are macros not
 functions (in Clojure as well as in `#lang rackjure`).
 
-### `-->` or "thread first"
+### `-->` a.k.a. "thread first"
 
 The `-->` macro "threads" values through a series of function
 applications as the _first_ argument to each one.
 
-### `-->>` or "thread last"
+For example, instead of:
+
+```racket
+(string->bytes/utf-8 (number->string (bytes-length #"foobar") 16))
+```
+
+You can write:
+
+```racket
+(--> #"foobar"
+     bytes-length
+     (number->string 16)
+     string->bytes/utf-8)
+```
+
+Or if you prefer on one line:
+
+```racket
+(--> #"foobar" bytes-length (number->string 16) string->bytes/utf-8)
+```
+
+The result of `bytes-length` will be "plugged in" as the first
+argument to `(number->string 16)`: `(number->string #|here|# 16)`.
+
+> Note: Unlike Clojure, `,` is not whitespace in Racket. If you want a
+> variation of the Cloure convention of using `,` to help show the
+> insertion point, I supposed you could use `#||#` operator. But
+> you'll probably find you don't really need to.
+
+Notice that `bytes-length` and `string->bytes/utf-8` are not enclosed
+in parentheses. They can be, but if they're not, the `-->` macro adds
+them automatically. A function that takes just one argument can be
+specified this way. As a result, `-->` can also be used as a kind of
+"`compose` where the arguments are in the 'common-sense' or
+'data-flow' order", as opposed to the formal math order.
+
+```racket
+((compose c b a) x)  <=>  (--> x a b c)
+```
+
+### `-->>` a.k.a. "thread last"
 
 The `-->>` macro "threads" values through a series of function
 applications as the _last_ argument to each one.
@@ -36,10 +76,14 @@ applications as the _last_ argument to each one.
 
 ## Applications using `dict?`s
 
-`(dict key)`     => `(dict-ref dict key)`
-`(dict key val)` => `(dict-set dict key val)`
-`(key dict)`     => `(dict-ref dict key)`
-`(#f dict)`      => `#f`
+`#lang rackjure` redefines `#:app` to make `dict`s work with certain
+applications:
+
+    (dict key)            => (dict-ref dict key)
+    (dict key #:else def) => (dict-ref dict key default)
+    (dict key val)        => (dict-set dict key val)
+    (key dict)            => (dict-ref dict key)
+    (#f dict)             => #f
 
 The last two let the `-->` threading macro provide concise notation
 for accessing nested `dict`s (for example the nested `hasheq`s from
