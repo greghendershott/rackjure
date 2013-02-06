@@ -1,0 +1,74 @@
+#lang racket/base
+
+;; Redefine #%app to:
+;;
+;; [1] Handle a dict in the first or second position.
+;;
+;; Downside: Adds a runtime `cond` check to normal applications of
+;; arities 2 and 3.
+;;
+;; We can look for certain arities at compile time, but the real test
+;; must be done at run time. For code size, do this in helper function
+;; rather than expanding to the test.
+;;
+;; One issue is how to handle the optional last argument to
+;; `dict-ref`, which is the value to use if the key is not found. We
+;; handle this slightly differently than `dict-ref`: 1. We use an
+;; optional _keyword_ argument #:else. This leaves arity 3 available
+;; to mean `dict-set`. 2. If this arg isn't supplied and the key isn't
+;; found, `dict-ref` raises an error. Instead we return `#f`. This is
+;; a more convenient, espeically when used with threading macros -->
+;; and -->>. It's smart that dict-ref lets you supply a specific value
+;; to mean not-found, because what if `#f` or 'not-found or whatever
+;; could be a valid value in the dict?  But even it's smarter to have
+;; some default not-found other than error, and make that be #f.  That
+;; way, burden is only on code that needs to store #f as values in a
+;; dict, to use the #:else keyword.
+;;
+;; [1](a) Handle (key #f) as #f. This allows doing a `dict-has-key?`
+;; over nested dicts with threading as (--> dict 'a 'b 'c). Because
+;; failure at any point will return #f, and we propogate the #f to the
+;; end.
+;;
+;; [2] Expand {k v ... ...} as (hash k v ... ...).
+
+(provide -#%app)
+
+(require (for-syntax racket/base syntax/parse)
+         racket/dict)
+
+(define (maybe-dict-ref x y)
+  (cond [(procedure? x) (#%app    x y)]     ;check normal case first/fast
+        [(dict? x)      (dict-ref x y #f)]  ;(dict key)
+        [(not y)        #f]                 ;(key #F) => #F
+        [(dict? y)      (dict-ref y x #f)]  ;(key dict)
+        [else (error 'maybe-dict-ref "~v ~v" x y)]))
+
+(define (maybe-dict-ref/else x y #:else d)
+  (cond [(procedure? x) (#%app    x y #:else d)] ;check normal case first/fast
+        [(dict? x)      (dict-ref x y d)]        ;(dict key #:else default)
+        [(dict? y)      (dict-ref y x d)]        ;(key dict #:else default)
+        [else (error 'maybe-dict-ref/else "~v ~v #:else ~a" x y d)]))
+
+(define (maybe-dict-set x y z)
+  (cond [(procedure? x) (#%app    x y z)] ;normal case first/fast
+        [(dict? x)      (dict-set x y z)] ;(dict key val)
+        [else (error 'maybe-dict-set "~a ~a ~a" x y z)]))
+
+(define-syntax (-#%app stx)
+  (define-splicing-syntax-class key-value-pair
+    (pattern (~seq k:expr v:expr)
+             #:attr pair #'(k v)))
+  (syntax-parse stx
+    ;; { hash literals }
+    [(_ kv:expr ...)
+     #:when (eq? (syntax-property stx 'paren-shape) #\{)
+     ;; #:fail-unless (zero? (remainder (length (syntax-e #'(kv ...))) 2))
+     ;; "Pairs of expressions"
+     #'(hash kv ...)]
+    ;; Arities that might be dict appliations
+    [(_ x:expr y:expr)               #'(maybe-dict-ref x y)]
+    [(_ x:expr y:expr #:else d:expr) #'(maybe-dict-ref/else x y #:else d)]
+    [(_ x:expr y:expr z:expr)        #'(maybe-dict-set x y z)]
+    ;; The usual
+    [(_ f      a ...)                #'(#%app f a ...)]))
