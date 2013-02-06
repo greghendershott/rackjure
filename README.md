@@ -54,8 +54,8 @@ argument to `(number->string 16)`: `(number->string #|here|# 16)`.
 
 > Note: Unlike Clojure, `,` is not whitespace in Racket. If you want a
 > variation of the Cloure convention of using `,` to help show the
-> insertion point, I supposed you could use `#||#` operator. But
-> you'll probably find you don't really need to.
+> insertion point, I suppose you could use `#||#` operator. But you'll
+> probably find you don't really need to.
 
 Notice that `bytes-length` and `string->bytes/utf-8` are not enclosed
 in parentheses. They can be, but if they're not, the `-->` macro adds
@@ -74,20 +74,22 @@ The `-->>` macro "threads" values through a series of function
 applications as the _last_ argument to each one.
 
 
-## Applications using `dict?`s
+## Applications using `dict`s
 
-`#lang rackjure` redefines `#:app` to make `dict`s work with certain
-applications:
+`#lang rackjure` redefines `#:app` to make applications work
+differently when a `dict` is in a certain position:
+
+    (dict key val)        => (dict-set dict key val)
 
     (dict key)            => (dict-ref dict key)
     (dict key #:else def) => (dict-ref dict key default)
-    (dict key val)        => (dict-set dict key val)
+
     (key dict)            => (dict-ref dict key)
     (#f dict)             => #f
 
-The last two let the `-->` threading macro provide concise notation
-for accessing nested `dict`s (for example the nested `hasheq`s from
-Racket's `json` module):
+The last two variants plus the `-->` threading macro provide concise
+notation for accessing nested `dict`s (for example the nested
+`hasheq`s from Racket's `json` module):
 
     (--> dict 'a 'b 'c)
 
