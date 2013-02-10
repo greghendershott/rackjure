@@ -24,6 +24,7 @@
   (check-false (--> {'a {'b {'c 0}}} 'a 'b 'huh?))
   (check-false (--> {'a {'b {'c 0}}} 'huh? 'b 'c))
 
+  ;; {} default `hash`
   (check-equal?
    {'key "value"
          'request {'version 1.0
@@ -39,4 +40,22 @@
          'response (hash 'version 1.0
                     'headers (hash 'Content-Type "foo"
                               'Content-Length 10))))
+
+  ;; {} using `current-hash` parameter to specify `hasheq`
+  (check-equal?
+   (parameterize ([current-hash hasheq])
+     {'key "value"
+           'request {'version 1.0
+                     'headers {'Content-Type "foo"
+                               'Content-Length 10}}
+           'response {'version 1.0
+                      'headers {'Content-Type "foo"
+                                'Content-Length 10}}})
+   (hasheq 'key "value"
+           'request (hasheq 'version 1.0
+                            'headers (hasheq 'Content-Type "foo"
+                                             'Content-Length 10))
+           'response (hasheq 'version 1.0
+                             'headers (hasheq 'Content-Type "foo"
+                                              'Content-Length 10))))
   )
