@@ -145,5 +145,9 @@ Especially handy with nested hashes:
        'key1 "value1"}}
 ```
 
+The `current-curly-dict` parameter says what this exapnds to. It
+defaults to `hash`, but may be `hasheq` or anything with a similar `(f
+k0 v0 k1 v1 ... ...)` signature.
+
 > Note that dictionary keys are _not_ required to be Clojure style
 > `:keywords`.

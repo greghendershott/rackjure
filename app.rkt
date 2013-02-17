@@ -32,7 +32,7 @@
 ;;
 ;; [2] Expand {k v ... ...} as (hash k v ... ...).
 
-(provide -#%app current-hash)
+(provide -#%app current-curly-dict)
 
 (require (for-syntax racket/base syntax/parse)
          racket/dict)
@@ -55,7 +55,7 @@
         [(dict? x)      (dict-set x y z)] ;(dict key val)
         [else (error 'maybe-dict-set "~a ~a ~a" x y z)]))
 
-(define current-hash (make-parameter hash)) ;`hash`, `hasheq` or same signature
+(define current-curly-dict (make-parameter hash)) ;`hash`, `hasheq` or similar
 
 (define-syntax (-#%app stx)
   (define-splicing-syntax-class key-value-pair
@@ -67,7 +67,7 @@
      #:when (eq? (syntax-property stx 'paren-shape) #\{)
      ;; #:fail-unless (zero? (remainder (length (syntax-e #'(kv ...))) 2))
      ;; "Pairs of expressions"
-     #'((current-hash) kv ...)]
+     #'((current-curly-dict) kv ...)]
     ;; Arities that might be dict appliations
     [(_ x:expr y:expr)               #'(maybe-dict-ref x y)]
     [(_ x:expr y:expr #:else d:expr) #'(maybe-dict-ref/else x y #:else d)]
