@@ -5,22 +5,27 @@
 (module+ test
   (require rackunit)
 
-  (check-true ((hasheq 'a #t) 'a))
-  (check-true ('a (hasheq 'a #t)))
+  ;; Application with the `dict` in first or second position
+  (define d (hasheq 'a #t))
+  (check-true (d 'a))
+  (check-true ('a d))
 
-  ;; This works because vector? is-a-kind-of dict?
+  ;; vector is-a-kind-of dict
   (define v (vector 0 1 2 3))
-  (check-equal? ((vector 0 1 2) 1) 1)
-  (check-equal? (1 (vector 0 1 2)) 1)
+  (check-equal? (v 1) 1)
+  (check-equal? (1 v) 1)
 
-  (require "threading.rkt")
-  (check-true (--> (hasheq 'a (hasheq 'b (hasheq 'c #t)))
-                   'a
-                   'b
-                   'c))
+  ;; Nested using --> (threading macro)
+  (check-equal? (--> (hasheq 'a (hasheq 'b (hasheq 'c 42)))
+                     'a
+                     'b
+                     'c)
+                42)
 
-  ;; A chain of dict-has-key?
+  ;; Nested dict-ref
   (check-equal? (--> {'a {'b {'c 0}}} 'a 'b 'c) 0)
+
+  ;; Nested dict-has-key?
   (check-false (--> {'a {'b {'c 0}}} 'a 'b 'huh?))
   (check-false (--> {'a {'b {'c 0}}} 'huh? 'b 'c))
 
@@ -41,9 +46,9 @@
                     'headers (hash 'Content-Type "foo"
                               'Content-Length 10))))
 
-  ;; {} using `current-hash` parameter to specify `hasheq`
+  ;; {} using `current-curly-dict` parameter to specify `hasheq`
   (check-equal?
-   (parameterize ([current-hash hasheq])
+   (parameterize ([current-curly-dict hasheq])
      {'key "value"
            'request {'version 1.0
                      'headers {'Content-Type "foo"
