@@ -43,7 +43,7 @@
     (time* (for ([i 100000])
              (dict-ref (dict-ref (dict-ref d 'a) 'b) 'c)))
     (time* (for ([i 100000])
-             (--> d 'a 'b 'c))))
+             (~> d 'a 'b 'c))))
   )
 
 (require 'normal)

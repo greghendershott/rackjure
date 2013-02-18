@@ -15,19 +15,19 @@
   (check-equal? (v 1) 1)
   (check-equal? (1 v) 1)
 
-  ;; Nested using --> (threading macro)
-  (check-equal? (--> (hasheq 'a (hasheq 'b (hasheq 'c 42)))
-                     'a
-                     'b
-                     'c)
+  ;; Nested using ~> (threading macro)
+  (check-equal? (~> (hasheq 'a (hasheq 'b (hasheq 'c 42)))
+                    'a
+                    'b
+                    'c)
                 42)
 
   ;; Nested dict-ref
-  (check-equal? (--> {'a {'b {'c 0}}} 'a 'b 'c) 0)
+  (check-equal? (~> {'a {'b {'c 0}}} 'a 'b 'c) 0)
 
   ;; Nested dict-has-key?
-  (check-false (--> {'a {'b {'c 0}}} 'a 'b 'huh?))
-  (check-false (--> {'a {'b {'c 0}}} 'huh? 'b 'c))
+  (check-false (~> {'a {'b {'c 0}}} 'a 'b 'huh?))
+  (check-false (~> {'a {'b {'c 0}}} 'huh? 'b 'c))
 
   ;; {} default `hash`
   (check-equal?
