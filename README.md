@@ -78,12 +78,14 @@ applications as the _last_ argument to each one.
 ## Applicable `dict`s
 
 `#lang rackjure` redefines `#:app` to make applications work
-differently when a `dict` is in a certain position:
+differently when a `dict` is in the first position:
 
     (dict key val)        => (dict-set dict key val)
 
     (dict key)            => (dict-ref dict key)
     (dict key #:else def) => (dict-ref dict key default)
+
+And also when a `dict` is in the second position:
 
     (key dict)            => (dict-ref dict key)
     (#f dict)             => #f
