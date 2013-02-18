@@ -3,16 +3,17 @@
 Provide some useful Clojure idioms for Racket. Where Racket and
 Clojure conflict, defer to Racket not Clojure.
 
-The original motivation is to make dictionary-heavy code less-tedious.
-
 Asumu Takikawa's
 [#lang clojure](https://github.com/takikawa/racket-clojure) showed me
 what's possible, and is the basis for much of this. But `#lang
-rackjure` defers to Racket conventions. For example the threading
-macros are `~>` and `~>>` (note the extra hyphen) because `->` is
-already spoken for with Racket's contracts. As another example, `{}`
-hash literals lets you use any type of key, rather than just Clojure
-`:keywords`.
+rackjure` defers to Racket conventions.
+
+For example the threading macros are `~>` and `~>>` (using `~` instead
+of `-`) because Racket already uses `->` for contracts. Plus as Danny
+Yoo pointed out, `~` is more "thready".
+
+As another example, the `{}` hash literals let you use anything for a
+key, not just Clojure `:keyword`s.
 
 In other words, the spirit of `#lang clojure` is to be compatible with
 Clojure, whereas the spirit of `#lang rackjure` is to adapt a few
@@ -38,9 +39,9 @@ You can write:
 
 ```racket
 (~> #"foobar"
-     bytes-length
-     (number->string 16)
-     string->bytes/utf-8)
+    bytes-length
+    (number->string 16)
+    string->bytes/utf-8)
 ```
 
 Or if you prefer on one line:
@@ -54,7 +55,7 @@ argument to `(number->string 16)`: `(number->string #|here|# 16)`.
 
 > Note: Unlike Clojure, `,` is not whitespace in Racket. If you want a
 > variation of the Cloure convention of using `,` to help show the
-> insertion point, I suppose you could use `#||#` operator. But you'll
+> insertion point, I suppose you could use `#||#` comments. But you'll
 > probably find you don't really need to.
 
 Notice that `bytes-length` and `string->bytes/utf-8` are not enclosed
@@ -74,7 +75,7 @@ The `~>>` macro "threads" values through a series of function
 applications as the _last_ argument to each one.
 
 
-## Applications using `dict`s
+## Applicable `dict`s
 
 `#lang rackjure` redefines `#:app` to make applications work
 differently when a `dict` is in a certain position:
@@ -93,7 +94,7 @@ notation for accessing nested `dict`s (for example the nested
 
     (~> dict 'a 'b 'c)
 
-expands to
+expands to:
 
     ('c ('b ('a dict)))
 
@@ -102,16 +103,16 @@ which in turn expands to:
     (dict-ref (dict-ref (dict-ref dict 'a) 'b) 'c)
 
 Note that dictionary keys are _not_ required to be Clojure style
-`:keywords`. They may be any type.
+`:keyword`s.  They may be anything.
 
 Keep in mind that `dict` is a Racket generic that covers a variety of
 things besides hashes.  Vectors and lists are also `dict`s.  As a
 result if `v` is a `vector` then `(v 2)` is `(vector-ref 2)`.
 
-> CAVEAT: This application syntax doesn't work for `dicts` that store
+> CAVEAT: This application syntax doesn't work for `dict`s that store
 > `procedure?` as keys or values. The reason is that `#lang rackjure`
-> must provide its own `#%app`. The only way it can distinguish a
-> normal function application from a dictionary application is to
+> must provide its own `#%app`. The only way (AFIK) it can distinguish
+> a normal function application from a dictionary application is to
 > check for `procedure?` in the first position.
 
 ### Not-found values
@@ -123,14 +124,15 @@ slightly differently than `dict-ref`:
 1. We use an optional _keyword_ argument, `#:else`. This leaves arity 3
 available to mean `dict-set`.
 
-2. If this arg isn't supplied and the key isn't found, `dict-ref`
-raises an error. Instead we return `#f`. This is more convenient,
-especially when used with threading macro `~>`. It's smart that
-`dict-ref` lets you supply a specific value to mean not-found, because
-what if `#f` or `'not-found` or whatever could be a valid value in the
-dict?  But it's even smarter to have not-found default to something
-other than error. That way, the burden is only on code that needs to
-store #f as values in a dict, and such code can the `#:else` keyword.
+2. If this arg isn't supplied and the key isn't found we return `#f`
+(whereas `dict-ref` raises an error). Returning `#f` is more
+convenient, especially when used with threading macro `~>`. It's smart
+that `dict-ref` lets you supply a specific value to mean not-found,
+because what if `#f` or `'not-found` or whatever could be a valid
+value in the dict?  But it's even smarter to have not-found default to
+something other than error. That way, the burden is only on code that
+needs to store #f as values in a dict, and such code can the `#:else`
+keyword.
 
 
 ## Hash initialization using `{ }`
@@ -148,6 +150,3 @@ Especially handy with nested hashes:
 The `current-curly-dict` parameter says what this exapnds to. It
 defaults to `hash`, but may be `hasheq` or anything with a similar `(f
 k0 v0 k1 v1 ... ...)` signature.
-
-> Note that dictionary keys are _not_ required to be Clojure style
-> `:keywords`.
