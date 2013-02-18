@@ -9,7 +9,7 @@ Asumu Takikawa's
 [#lang clojure](https://github.com/takikawa/racket-clojure) showed me
 what's possible, and is the basis for much of this. But `#lang
 rackjure` defers to Racket conventions. For example the threading
-macros are `-->` and `-->>` (note the extra hyphen) because `->` is
+macros are `~>` and `~>>` (note the extra hyphen) because `->` is
 already spoken for with Racket's contracts. As another example, `{}`
 hash literals lets you use any type of key, rather than just Clojure
 `:keywords`.
@@ -18,14 +18,14 @@ In other words, the spirit of `#lang clojure` is to be compatible with
 Clojure, whereas the spirit of `#lang rackjure` is to adapt a few
 useful ideas from Clojure for use in Racket.
 
-## "Threading" macros `-->` and `-->>`
+## "Threading" macros `~>` and `~>>`
 
 Although similar to the thrush combinatior, these are macros not
 functions (in Clojure as well as in `#lang rackjure`).
 
-### `-->` a.k.a. "thread first"
+### `~>` a.k.a. "thread first"
 
-The `-->` macro "threads" values through a series of function
+The `~>` macro "threads" values through a series of function
 applications as the _first_ argument to each one.
 
 For example, instead of:
@@ -37,7 +37,7 @@ For example, instead of:
 You can write:
 
 ```racket
-(--> #"foobar"
+(~> #"foobar"
      bytes-length
      (number->string 16)
      string->bytes/utf-8)
@@ -46,7 +46,7 @@ You can write:
 Or if you prefer on one line:
 
 ```racket
-(--> #"foobar" bytes-length (number->string 16) string->bytes/utf-8)
+(~> #"foobar" bytes-length (number->string 16) string->bytes/utf-8)
 ```
 
 The result of `bytes-length` will be "plugged in" as the first
@@ -58,19 +58,19 @@ argument to `(number->string 16)`: `(number->string #|here|# 16)`.
 > probably find you don't really need to.
 
 Notice that `bytes-length` and `string->bytes/utf-8` are not enclosed
-in parentheses. They can be, but if they're not, the `-->` macro adds
+in parentheses. They can be, but if they're not, the `~>` macro adds
 them automatically. A function that takes just one argument can be
-specified this way. As a result, `-->` can also be used as a kind of
+specified this way. As a result, `~>` can also be used as a kind of
 "`compose` where the arguments are in the 'common-sense' or
 'data-flow' order", as opposed to the formal math order.
 
 ```racket
-((compose c b a) x)  <=>  (--> x a b c)
+((compose c b a) x)  <=>  (~> x a b c)
 ```
 
-### `-->>` a.k.a. "thread last"
+### `~>>` a.k.a. "thread last"
 
-The `-->>` macro "threads" values through a series of function
+The `~>>` macro "threads" values through a series of function
 applications as the _last_ argument to each one.
 
 
@@ -87,11 +87,11 @@ differently when a `dict` is in a certain position:
     (key dict)            => (dict-ref dict key)
     (#f dict)             => #f
 
-The last two variants plus the `-->` threading macro provide concise
+The last two variants plus the `~>` threading macro provide concise
 notation for accessing nested `dict`s (for example the nested
 `hasheq`s from Racket's `json` module):
 
-    (--> dict 'a 'b 'c)
+    (~> dict 'a 'b 'c)
 
 expands to
 
@@ -125,7 +125,7 @@ available to mean `dict-set`.
 
 2. If this arg isn't supplied and the key isn't found, `dict-ref`
 raises an error. Instead we return `#f`. This is more convenient,
-especially when used with threading macro `-->`. It's smart that
+especially when used with threading macro `~>`. It's smart that
 `dict-ref` lets you supply a specific value to mean not-found, because
 what if `#f` or `'not-found` or whatever could be a valid value in the
 dict?  But it's even smarter to have not-found default to something
