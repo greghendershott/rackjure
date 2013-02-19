@@ -1,28 +1,43 @@
 # #lang rackjure
 
-Provide some useful Clojure idioms for Racket. Where Racket and
-Clojure conflict, defer to Racket not Clojure.
+Provide a few Clojure-inspired ideas in Racket. Where Racket and
+Clojure conflict, prefer Racket.
+
+Main features:
+
+- Threading macros `~>` and `~>>`.
+- Applicable dictionaries.
+- Using `{` ... `}` to initialize dictionaries.
+
+## Background/philosophy
 
 Asumu Takikawa's
 [#lang clojure](https://github.com/takikawa/racket-clojure) showed me
-what's possible, and is the basis for much of this. But `#lang
-rackjure` defers to Racket conventions.
+what's possible and is the basis for much of this. Why not just use
+that? Because I wanted to use some Clojure ideas in Racket, not use
+Clojure.
 
 For example the threading macros are `~>` and `~>>` (using `~` instead
 of `-`) because Racket already uses `->` for contracts. Plus as Danny
-Yoo pointed out, `~` is more "thready".
+Yoo pointed out to me, `~` is more "thready".
 
-As another example, the `{}` hash literals let you use anything for a
-key, not just Clojure `:keyword`s.
+As another example, the `{}` dictionary literals let you use anything
+for a key, not just Clojure map `:keyword`s.
 
-In other words, the spirit of `#lang clojure` is to be compatible with
-Clojure, whereas the spirit of `#lang rackjure` is to adapt a few
-useful ideas from Clojure for use in Racket.
+When it must choose, `#lang rackjure` chooses to be more Rackety.
 
 ## "Threading" macros `~>` and `~>>`
 
-Although similar to the thrush combinatior, these are macros not
-functions (in Clojure as well as in `#lang rackjure`).
+The "threading" macros let you thread values through a series of
+applications in data-flow order. This can be a really refreshing way
+to express a series of transforms, instead of nested function calls.
+
+Although similar to the thrush combinator function (and you may hear
+them described that way), these are actually macros (in both Clojure
+and `#lang rackjure`).
+
+And although similar to `compose`, the order is reversed, and again,
+these are macros.
 
 ### `~>` a.k.a. "thread first"
 
@@ -58,8 +73,8 @@ argument to `(number->string 16)`: `(number->string #|here|# 16)`.
 > insertion point, I suppose you could use `#||#` comments. But you'll
 > probably find you don't really need to.
 
-Notice that `bytes-length` and `string->bytes/utf-8` are not enclosed
-in parentheses. They can be, but if they're not, the `~>` macro adds
+Notice that `bytes-length` and `string->bytes/utf-8` aren't enclosed
+in parentheses. They could be, but if they're not, the `~>` macro adds
 them automatically. A function that takes just one argument can be
 specified this way. As a result, `~>` can also be used as a kind of
 "`compose` where the arguments are in the 'common-sense' or
@@ -77,7 +92,7 @@ applications as the _last_ argument to each one.
 
 ## Applicable `dict`s
 
-`#lang rackjure` redefines `#:app` to make applications work
+`#lang rackjure` redefines `#%:app` to make applications work
 differently when a `dict` is in the first position:
 
     (dict key val)        => (dict-set dict key val)
@@ -108,14 +123,16 @@ Note that dictionary keys are _not_ required to be Clojure style
 `:keyword`s.  They may be anything.
 
 Keep in mind that `dict` is a Racket generic that covers a variety of
-things besides hashes.  Vectors and lists are also `dict`s.  As a
-result if `v` is a `vector` then `(v 2)` is `(vector-ref 2)`.
+things besides `hash` and association lists.  Vectors and lists are
+also `dict`s.  As a result if `v` is a `vector` then `(vector-ref v
+2)` can be written simply as `(v 2)`.
 
 > CAVEAT: This application syntax doesn't work for `dict`s that store
 > `procedure?` as keys or values. The reason is that `#lang rackjure`
 > must provide its own `#%app`. The only way (AFIK) it can distinguish
 > a normal function application from a dictionary application is to
-> check for `procedure?` in the first position.
+> check for `procedure?` in the first position. As a result, in those
+> cases you'll have to use `dict-ref` and `dict-set`.
 
 ### Not-found values
 
@@ -137,11 +154,11 @@ needs to store #f as values in a dict, and such code can the `#:else`
 keyword.
 
 
-## Hash initialization using `{ }`
+## Dict initialization using `{ }`
 
-Write `(hash k0 v0 k1 v1 ...)` as `{k0 v0 k1 v1 ...}`.
+Write `((k0 . v0)(k1 . v1) ...)` as `{k0 v0 k1 v1 ...}`.
 
-Especially handy with nested hashes:
+Especially handy with nested dicts:
 
 ```racket
 {'key "value"
@@ -150,5 +167,6 @@ Especially handy with nested hashes:
 ```
 
 The `current-curly-dict` parameter says what this exapnds to. It
-defaults to `hash`, but may be `hasheq` or anything with a similar `(f
-k0 v0 k1 v1 ... ...)` signature.
+defaults to `alist`, but may be set to `hash`, `hasheq` or anything
+with a `(f k0 v0 k1 v1 ... ...)` signature.
+
