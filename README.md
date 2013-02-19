@@ -92,7 +92,7 @@ applications as the _last_ argument to each one.
 
 ## Applicable `dict`s
 
-`#lang rackjure` redefines `#%:app` to make applications work
+`#lang rackjure` redefines `#%app` to make applications work
 differently when a `dict` is in the first position:
 
     (dict key val)        => (dict-set dict key val)
