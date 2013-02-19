@@ -88,7 +88,7 @@ differently when a `dict` is in the first position:
 And also when a `dict` is in the second position:
 
     (key dict)            => (dict-ref dict key)
-    (#f dict)             => #f
+    (key #f)              => #f
 
 The last two variants plus the `~>` threading macro provide concise
 notation for accessing nested `dict`s (for example the nested
