@@ -1,6 +1,7 @@
 #lang racket/base
 
-(require racket/contract racket/dict)
+(require racket/contract racket/dict
+         "alist.rkt")
 
 (provide (contract-out [dict-merge (dict? dict? . -> . dict?)]
                        [dict-merge-delete-value (() (any/c) . ->* . any/c)]))
@@ -41,10 +42,12 @@
   (for/fold ([d0 d0]) ([(k v) (in-dict d1)])
     (cond [(dict? v)
            (define (default d)
-             (cond [(hash-eq? d) (hasheq)]
-                   [(hash? d) (hash)]
-                   [(list? d) '()]
-                   [else (error 'dict-merge "don't know dict type")]))
+             (cond [(hash? d) (cond [(hash-eq? d) (hasheq)]
+                                    [else (hash)])]
+                   [(alist? d) '()]
+                   [else (raise-type-error 'dict-merge
+                                           "hash?, hasheq? or alist?"
+                                           d)]))
            (dict-set d0 k (dict-merge (dict-ref d0 k (default (dict-ref d1 k)))
                                       (dict-ref d1 k)))]
           [(eq? (dict-merge-delete-value) v) (dict-remove d0 k)]

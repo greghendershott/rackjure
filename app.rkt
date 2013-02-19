@@ -9,7 +9,7 @@
 ;;
 ;; We can look for certain arities at compile time, but the real test
 ;; must be done at run time. For code size, do this in helper function
-;; rather than expanding to the test.
+;; rather than expanding such test inline.
 ;;
 ;; One issue is how to handle the optional last argument to
 ;; `dict-ref`, which is the value to use if the key is not found. We
@@ -30,45 +30,54 @@
 ;; failure at any point will return #f, and we propogate the #f to the
 ;; end.
 ;;
-;; [2] Expand {k v ... ...} as (hash k v ... ...).
+;; [2] Expand {k v ... ...} as (dict k v ... ...).
 
-(provide -#%app current-curly-dict)
+(provide -#%app
+         alist
+         alist?
+         current-curly-dict)
 
 (require (for-syntax racket/base syntax/parse)
-         racket/dict)
+         racket/dict
+         "alist.rkt")
 
 (define (maybe-dict-ref x y)
   (cond [(procedure? x) (#%app    x y)]     ;check normal case first/fast
         [(dict? x)      (dict-ref x y #f)]  ;(dict key)
-        [(not y)        #f]                 ;(key #F) => #F
+        [(not y)        #f]                 ;(key #f) => #F
         [(dict? y)      (dict-ref y x #f)]  ;(key dict)
-        [else (error 'maybe-dict-ref "~v ~v" x y)]))
+        [else (error 'applicable-dict
+                     "No dict? supplied\nin: (~v ~v)" x y)]))
 
 (define (maybe-dict-ref/else x y #:else d)
   (cond [(procedure? x) (#%app    x y #:else d)] ;check normal case first/fast
         [(dict? x)      (dict-ref x y d)]        ;(dict key #:else default)
         [(dict? y)      (dict-ref y x d)]        ;(key dict #:else default)
-        [else (error 'maybe-dict-ref/else "~v ~v #:else ~a" x y d)]))
+        [else (error 'applicable-dict
+                     "No dict? supplied\nin: (~v ~v #:else ~a)" x y d)]))
 
 (define (maybe-dict-set x y z)
   (cond [(procedure? x) (#%app    x y z)] ;normal case first/fast
         [(dict? x)      (dict-set x y z)] ;(dict key val)
-        [else (error 'maybe-dict-set "~a ~a ~a" x y z)]))
+        [else (error 'applicable-dict
+                     "No dict? supplied\nin: (~a ~a ~a)" x y z)]))
 
-(define current-curly-dict (make-parameter hash)) ;`hash`, `hasheq` or similar
+;; What does {} use to initialize? Can be `hash`, `hasheq`, `alist`,
+;; or similar signature function that returns a `dict?`.
+(define current-curly-dict (make-parameter alist))
 
 (define-syntax (-#%app stx)
   (define-splicing-syntax-class key-value-pair
     (pattern (~seq k:expr v:expr)
              #:attr pair #'(k v)))
   (syntax-parse stx
-    ;; { hash literals }
+    ;; { dict literals }
     [(_ kv:expr ...)
      #:when (eq? (syntax-property stx 'paren-shape) #\{)
      ;; #:fail-unless (zero? (remainder (length (syntax-e #'(kv ...))) 2))
      ;; "Pairs of expressions"
      #'((current-curly-dict) kv ...)]
-    ;; Arities that might be dict appliations
+    ;; Arities that might be dict applications
     [(_ x:expr y:expr)               #'(maybe-dict-ref x y)]
     [(_ x:expr y:expr #:else d:expr) #'(maybe-dict-ref/else x y #:else d)]
     [(_ x:expr y:expr z:expr)        #'(maybe-dict-set x y z)]
