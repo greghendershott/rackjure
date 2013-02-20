@@ -28,6 +28,10 @@
   (syntax-parse stx
     [(_ x)
      #'x]
+    ;; When e is a symbol like 'a, that's actually (quote a), so DON'T
+    ;; thread x into that. We want ((quote a) x), NOT (quote x a).
+    [(_ x ((~literal quote) e))
+     #'((quote e) x)]
     [(_ x (e e_1 ...))
      #'(e e_1 ... x)]
     [(_ x form form_1 ...)
@@ -46,6 +50,9 @@
                     'a)
                 0)
   (check-equal? (~>> 5 (+ 3) (/ 2) (- 1))
-                (/ 3 4)))
+                (/ 3 4))
+  (check-equal? (~>> (hasheq 'a 0)
+                    'a)
+                0))
 
 
