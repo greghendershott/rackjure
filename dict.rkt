@@ -1,35 +1,21 @@
 #lang racket/base
 
-(require racket/contract racket/dict
+(require racket/contract racket/dict racket/format
          "alist.rkt")
 
-(provide (contract-out [dict-merge (dict? dict? . -> . dict?)]
-                       [dict-merge-delete-value (() (any/c) . ->* . any/c)]))
+(provide
+ (contract-out
+  [dict-merge (dict? dict? . -> . dict?)]
+  [dict-merge-delete-value (() (any/c) . ->* . any/c)]
+  [dict->curly-string ((dict?)
+                       (exact-nonnegative-integer? exact-nonnegative-integer?)
+                       . ->* . string?)]
+  ))
 
-;; Instead of this:
-;;
-;; (define (some-middleware r)
-;;   (dict-set* r
-;;     'request (dict-set* (dict-ref r 'request)
-;;                'version 1.1
-;;                'headers (dict-set* (dict-refs r 'request 'headers)
-;;                           'Content-Type "foo"
-;;                           'Content-Length 10))
-;;     'response (dict-set* (dict-ref r 'response)
-;;                 'headers (dict-set* (dict-refs r 'request 'headers)
-;;                           'Content-Type "foo"
-;;                           'Content-Length 10))))
-;;
-;; We can write this:
-;;
-;; (define (some-middleware r)
-;;   (dict-merge r
-;;    (hasheq
-;;     'request (hasheq 'version 1.1
-;;                      'headers (hasheq 'Content-Type "foo"
-;;                                       'Content-Length 10))
-;;     'response (hasheq 'headers (hasheq 'Content-Type "foo"
-;;                                        'Content-Length 10)))))
+(module+ test
+  (require rackunit))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Functionally merge d1 into d0. Values in d0 are overriden by values
 ;; with the same key in d1, but otherwise values in d0
@@ -54,7 +40,6 @@
           [else (dict-set d0 k v)])))
 
 (module+ test
-  (require rackunit)
   (check-equal?
    (dict-merge (hasheq 'foo "bar"
                        'bar "baz"
@@ -76,3 +61,47 @@
     'response (hasheq 'headers (hasheq 'Content-Length 10
                                        'Content-Type "foo"))
     'foo "bar")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Return a {} style string describing the nestead dicts
+(define (dict->curly-string d [depth 0] [indent 0])
+  (define concat string-append)         ;minimize indent
+  (concat "{"
+          (for/fold ([s ""])
+                    ([(k v) (in-dict d)]
+                     [i (in-naturals)])
+            (concat s
+                    (cond [(zero? i) ""]
+                          [else (make-string (+ indent depth 1) #\space)])
+                    (~v k)
+                    " "
+                    (cond [(dict? v) (dict->curly-string
+                                      v
+                                      (add1 depth)
+                                      (+ 1 indent (string-length (~v k))))]
+                          [else (~v v)])
+                    (cond [(= i (- (length (dict-keys d)) 1)) "}"]
+                          [else "\n"])
+                    ))))
+
+(module+ test
+  (check-equal?
+   (dict->curly-string
+    '([a . 0]
+      [b . 0]
+      [c . ([a . 0]
+            [b . 0]
+            [c . ([a . 0]
+                  [b . 0]
+                  [c . 0])])]))
+   #<<EOF
+{'a 0
+ 'b 0
+ 'c {'a 0
+     'b 0
+     'c {'a 0
+         'b 0
+         'c 0}}}
+EOF
+))
