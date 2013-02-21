@@ -29,7 +29,7 @@
   (check-false (~> {'a {'b {'c 0}}} 'a 'b 'huh?))
   (check-false (~> {'a {'b {'c 0}}} 'huh? 'b 'c))
 
-  ;; {} default `hash`
+  ;; {} default `alist`
   (check-equal?
    {'key "value"
          'request {'version 1.0
@@ -38,13 +38,13 @@
          'response {'version 1.0
                     'headers {'Content-Type "foo"
                               'Content-Length 10}}}
-   (hash 'key "value"
-         'request (hash 'version 1.0
-                   'headers (hash 'Content-Type "foo"
-                             'Content-Length 10))
-         'response (hash 'version 1.0
-                    'headers (hash 'Content-Type "foo"
-                              'Content-Length 10))))
+   (alist 'key "value"
+          'request (alist 'version 1.0
+                          'headers (alist 'Content-Type "foo"
+                                          'Content-Length 10))
+          'response (alist 'version 1.0
+                           'headers (alist 'Content-Type "foo"
+                                           'Content-Length 10))))
 
   ;; {} using `current-curly-dict` parameter to specify `hasheq`
   (check-equal?
