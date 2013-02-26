@@ -8,6 +8,7 @@ Main features:
 - Threading macros `~>` and `~>>`.
 - Applicable dictionaries.
 - Using `{` ... `}` to initialize dictionaries.
+- `str`
 
 ## Background/philosophy
 
@@ -170,3 +171,31 @@ The `current-curly-dict` parameter says what this exapnds to. It
 defaults to `alist`, but may be set to `hash`, `hasheq` or anything
 with a `(f k0 v0 k1 v1 ... ...)` signature.
 
+## `str`
+
+`str` can be a succinct alternative to `string-append` or `format`.
+
+Examples:
+
+    (str)      => ""
+    (str "hi") => "hi"
+    (str 1)    => "1"
+    (str #f)   => "#f"
+    (str "Yo" "Yo")      => "YoYo"
+    (str "Yo" "Yo" "Ma") => "YoYoMa"
+    (str '(0 1 2 3 4 5 6 7 8 9))        => "(0 1 2 3 4 5 6 7 8 9)"
+    (apply str '(0 1 2 3 4 5 6 7 8 9))  => "0123456789"
+
+Our version adds optional keyword arguments, the defaults behave like
+Clojure's `str`.
+
+- `#:fmt`: The function to apply to each argument. Defaults to
+           `~a`. May instead be `~v` or anything `(any/c -> string?`.
+
+- `#:sep`: A `string?` to add between each. Defaults to `""`.
+
+Examples:
+
+    (str #:fmt ~v "Yo" "Yo")            => "\"Yo\"\"Yo\""
+    (str #:sep " " "Yo" "Yo")           => "Yo Yo"
+    (str #:fmt ~v  #:sep " " "Yo" "Yo") => "\"Yo\" \"Yo\""
