@@ -54,5 +54,3 @@
   (check-equal? (~>> (hasheq 'a 0)
                     'a)
                 0))
-
-
