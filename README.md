@@ -163,11 +163,11 @@ Especially handy with nested dicts:
 
 ```racket
 {'key "value"
-      {'key "value"
-       'key1 "value1"}}
+ 'key1 {'key "value"
+        'key1 "value1"}}
 ```
 
-The `current-curly-dict` parameter says what this exapnds to. It
+The `current-curly-dict` parameter says what this expands to. It
 defaults to `alist`, but may be set to `hash`, `hasheq` or anything
 with a `(f k0 v0 k1 v1 ... ...)` signature.
 
