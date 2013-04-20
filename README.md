@@ -163,8 +163,8 @@ Especially handy with nested dicts:
 
 ```racket
 {'key "value"
-      {'key "value"
-       'key1 "value1"}}
+ 'key1 {'key "value"
+        'key1 "value1"}}
 ```
 
 The `current-curly-dict` parameter says what this expands to. It
