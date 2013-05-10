@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require racket/contract racket/string racket/format)
+(require racket/contract racket/string)
 
 (provide
  (contract-out
@@ -10,6 +10,11 @@
         . ->* .
         string?)]))
     
+;; Don't require racket/format just for this. Define it here so can
+;; work with older versions of Racket, too.
+(define (~a s)
+  (format "~a" s))
+
 ;; #:fmt: The function to apply. Defaults to ~a. Could be ~v, or
 ;; anything that returns a string?
 ;;

@@ -10,6 +10,10 @@ Main features:
 - Using `{` ... `}` to initialize dictionaries.
 - `str`
 
+This is tested with Racket 5.3. If you find an issue with an earlier
+version of Racket, please report here on GitHub Issues and if possible
+I'll try to fix.
+
 ## Background/philosophy
 
 Asumu Takikawa's
