@@ -55,4 +55,6 @@
                 (/ 3 4))
   (check-equal? (~>> (hasheq 'a 0)
                     'a)
-                0))
+                0)
+  (check-equal? (~>> 1 add1)
+                2))
