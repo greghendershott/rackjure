@@ -182,14 +182,16 @@ with a `(f k0 v0 k1 v1 ... ...)` signature.
 
 Examples:
 
-    (str)      => ""
-    (str "hi") => "hi"
-    (str 1)    => "1"
-    (str #f)   => "#f"
-    (str "Yo" "Yo")      => "YoYo"
-    (str "Yo" "Yo" "Ma") => "YoYoMa"
-    (str '(0 1 2 3 4 5 6 7 8 9))        => "(0 1 2 3 4 5 6 7 8 9)"
-    (apply str '(0 1 2 3 4 5 6 7 8 9))  => "0123456789"
+```racket
+(str)      => ""
+(str "hi") => "hi"
+(str 1)    => "1"
+(str #f)   => "#f"
+(str "Yo" "Yo")      => "YoYo"
+(str "Yo" "Yo" "Ma") => "YoYoMa"
+(str '(0 1 2 3 4 5 6 7 8 9))        => "(0 1 2 3 4 5 6 7 8 9)"
+(apply str '(0 1 2 3 4 5 6 7 8 9))  => "0123456789"
+```
 
 Our version adds optional keyword arguments, the defaults behave like
 Clojure's `str`.
@@ -201,9 +203,11 @@ Clojure's `str`.
 
 Examples:
 
-    (str #:fmt ~v "Yo" "Yo")            => "\"Yo\"\"Yo\""
-    (str #:sep " " "Yo" "Yo")           => "Yo Yo"
-    (str #:fmt ~v  #:sep " " "Yo" "Yo") => "\"Yo\" \"Yo\""
+```racket
+(str #:fmt ~v "Yo" "Yo")            => "\"Yo\"\"Yo\""
+(str #:sep " " "Yo" "Yo")           => "Yo Yo"
+(str #:fmt ~v  #:sep " " "Yo" "Yo") => "\"Yo\" \"Yo\""
+```
 
 ## `if-let` and `when-let`
 
@@ -211,12 +215,14 @@ Handy conditionals that (as you might have guessed) combine `if`/`when` with `le
 
 Examples:
 
-    (define dict {'foo 5})
-    
-    (if-let [foo ('foo dict)]
-      (add1 foo)
-      'foo-not-found) => 6
-    
-    (when-let [foo {'foo dict}]
-      (displayln "OK... *drumroll*")
-      (displayln (str "foo was set to " foo)))
+```racket
+(define dict {'foo 5})
+
+(if-let [foo ('foo dict)]
+  (add1 foo)
+  'foo-not-found) => 6
+
+(when-let [foo {'foo dict}]
+  (displayln "OK... *drumroll*")
+  (displayln (str "foo was set to " foo)))
+```
