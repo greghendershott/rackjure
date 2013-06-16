@@ -101,29 +101,39 @@ applications as the _last_ argument to each one.
 `#lang rackjure` redefines `#%app` to make applications work
 differently when a `dict` is in the first position:
 
-    (dict key val)        => (dict-set dict key val)
+```racket
+(dict key val)        => (dict-set dict key val)
 
-    (dict key)            => (dict-ref dict key)
-    (dict key #:else def) => (dict-ref dict key default)
+(dict key)            => (dict-ref dict key)
+(dict key #:else def) => (dict-ref dict key default)
+```
 
 And also when a `dict` is in the second position:
 
-    (key dict)            => (dict-ref dict key)
-    (key #f)              => #f
+```racket
+(key dict)            => (dict-ref dict key)
+(key #f)              => #f
+```
 
 The last two variants plus the `~>` threading macro provide concise
 notation for accessing nested `dict`s (for example the nested
 `hasheq`s from Racket's `json` module):
 
-    (~> dict 'a 'b 'c)
+```racket
+(~> dict 'a 'b 'c)
+```
 
 expands to:
 
-    ('c ('b ('a dict)))
+```racket
+('c ('b ('a dict)))
+```
 
 which in turn expands to:
 
-    (dict-ref (dict-ref (dict-ref dict 'a) 'b) 'c)
+```racket
+(dict-ref (dict-ref (dict-ref dict 'a) 'b) 'c)
+```
 
 Note that dictionary keys are _not_ required to be Clojure style
 `:keyword`s.  They may be anything.
