@@ -207,7 +207,7 @@ Our version adds optional keyword arguments, the defaults behave like
 Clojure's `str`.
 
 - `#:fmt`: The function to apply to each argument. Defaults to
-           `~a`. May instead be `~v` or anything `(any/c -> string?`.
+           `~a`. May instead be `~v` or any `(any/c -> string?)` function.
 
 - `#:sep`: A `string?` to add between each. Defaults to `""`.
 
