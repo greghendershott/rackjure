@@ -9,6 +9,7 @@ Main features:
 - Applicable dictionaries.
 - Using `{` ... `}` to initialize dictionaries.
 - `str`
+- `if-let` and `when-let`
 
 This is tested with Racket 5.3. If you find an issue with an earlier
 version of Racket, please report here on GitHub Issues and if possible
@@ -203,3 +204,19 @@ Examples:
     (str #:fmt ~v "Yo" "Yo")            => "\"Yo\"\"Yo\""
     (str #:sep " " "Yo" "Yo")           => "Yo Yo"
     (str #:fmt ~v  #:sep " " "Yo" "Yo") => "\"Yo\" \"Yo\""
+
+## `if-let` and `when-let`
+
+Handy conditionals that (as you might have guessed) combine `if`/`when` with `let`.
+
+Examples:
+
+    (define dict {'foo 5})
+    
+    (if-let [foo ('foo dict)]
+      (add1 foo)
+      'foo-not-found) => 6
+    
+    (when-let [foo {'foo dict}]
+      (displayln "OK... *drumroll*")
+      (displayln (str "foo was set to " foo)))
