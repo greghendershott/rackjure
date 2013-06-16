@@ -74,10 +74,10 @@ Or if you prefer on one line:
 The result of `bytes-length` will be "plugged in" as the first
 argument to `(number->string 16)`: `(number->string #|here|# 16)`.
 
-> Note: Unlike Clojure, `,` is not whitespace in Racket. If you want a
-> variation of the Cloure convention of using `,` to help show the
-> insertion point, I suppose you could use `#||#` comments. But you'll
-> probably find you don't really need to.
+> **NOTE:** Unlike Clojure, `,` is not whitespace in Racket. If you
+> want a variation of the Cloure convention of using `,` to help show
+> the insertion point, I suppose you could use `#||#` comments. But
+> you'll probably find you don't really need to.
 
 Notice that `bytes-length` and `string->bytes/utf-8` aren't enclosed
 in parentheses. They could be, but if they're not, the `~>` macro adds
@@ -143,12 +143,12 @@ things besides `hash` and association lists.  Vectors and lists are
 also `dict`s.  As a result if `v` is a `vector` then `(vector-ref v
 2)` can be written simply as `(v 2)`.
 
-> CAVEAT: This application syntax doesn't work for `dict`s that store
-> `procedure?` as keys or values. The reason is that `#lang rackjure`
-> must provide its own `#%app`. The only way (AFIK) it can distinguish
-> a normal function application from a dictionary application is to
-> check for `procedure?` in the first position. As a result, in those
-> cases you'll have to use `dict-ref` and `dict-set`.
+> **CAVEAT:** This application syntax doesn't work for `dict`s that
+> store `procedure?` as keys or values. The reason is that `#lang
+> rackjure` must provide its own `#%app`. The only way (AFIK) it can
+> distinguish a normal function application from a dictionary
+> application is to check for `procedure?` in the first position. As a
+> result, in those cases you'll have to use `dict-ref` and `dict-set`.
 
 ### Not-found values
 
