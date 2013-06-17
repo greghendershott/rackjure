@@ -2,19 +2,15 @@
 
 (provide if-let when-let)
 
-(require (for-syntax racket/base syntax/parse))
+(require syntax/parse/define)
 
-(define-syntax (if-let stx)
-  (syntax-parse stx
-    [(_ [binding:id value] then-expr else-expr)
-     #'(let ([binding value])
-         (if binding then-expr else-expr))]))
+(define-simple-macro (if-let [binding:id value:expr] then:expr else:expr)
+  (let ([binding value])
+    (if binding then else)))
 
-(define-syntax (when-let stx)
-  (syntax-parse stx
-    [(_ [binding:id value] body ...)
-     #'(let ([binding value])
-         (when binding body ...))]))
+(define-simple-macro (when-let [binding:id value:expr] body:expr ...+)
+  (let ([binding value])
+    (when binding body ...)))
 
 (module+ test
   (require rackunit)
