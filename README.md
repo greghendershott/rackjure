@@ -145,7 +145,7 @@ also `dict`s.  As a result if `v` is a `vector` then `(vector-ref v
 
 > **CAVEAT:** This application syntax doesn't work for `dict`s that
 > store `procedure?` as keys or values. The reason is that `#lang
-> rackjure` must provide its own `#%app`. The only way (AFIK) it can
+> rackjure` must provide its own `#%app`. The only way (AFAIK) it can
 > distinguish a normal function application from a dictionary
 > application is to check for `procedure?` in the first position. As a
 > result, in those cases you'll have to use `dict-ref` and `dict-set`.
@@ -166,8 +166,8 @@ that `dict-ref` lets you supply a specific value to mean not-found,
 because what if `#f` or `'not-found` or whatever could be a valid
 value in the dict?  But it's even smarter to have not-found default to
 something other than error. That way, the burden is only on code that
-needs to store #f as values in a dict, and such code can the `#:else`
-keyword.
+needs to store #f as values in a dict, and such code can use the
+`#:else` keyword.
 
 
 ## Dict initialization using `{ }`
