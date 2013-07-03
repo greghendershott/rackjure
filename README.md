@@ -1,5 +1,7 @@
 # #lang rackjure
 
+[![Build Status](https://travis-ci.org/greghendershott/rackjure.png?branch=master)](https://travis-ci.org/greghendershott/rackjure)
+
 Provide a few Clojure-inspired ideas in Racket. Where Racket and
 Clojure conflict, prefer Racket.
 
