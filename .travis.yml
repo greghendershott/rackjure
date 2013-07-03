@@ -11,6 +11,7 @@ install:
 before_script:
 
 script:
+ - /usr/racket/bin/raco link rackjure
  - cd rackjure
  - /usr/racket/bin/raco make main.rkt
  - /usr/racket/bin/raco test -x .
