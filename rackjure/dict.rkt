@@ -1,7 +1,6 @@
 #lang racket/base
 
-(require racket/contract racket/dict racket/format
-         "alist.rkt")
+(require racket/contract racket/dict racket/function "alist.rkt")
 
 (provide
  (contract-out
@@ -67,6 +66,7 @@
 ;; Return a {} style string describing the nestead dicts
 (define (dict->curly-string d [depth 0] [indent 0])
   (define concat string-append)         ;minimize indent
+  (define ~v (curry format "~v"))
   (concat "{"
           (for/fold ([s ""])
                     ([(k v) (in-dict d)]

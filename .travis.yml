@@ -1,6 +1,7 @@
 language: c
 
 env:
+ - RACKET_VERSION=5.3
  - RACKET_VERSION=5.3.5
 
 before_install:
