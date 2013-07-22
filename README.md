@@ -104,22 +104,27 @@ applications as the _last_ argument to each one.
 differently when a `dict` is in the first position:
 
 ```racket
-(dict key val)        => (dict-set dict key val)
+;; When (dict? d) is #t
 
-(dict key)            => (dict-ref dict key)
-(dict key #:else def) => (dict-ref dict key default)
+;; Set
+(d key val)            => (dict-set d key val)
+
+;; Get
+(d key)                => (dict-ref d key #f)
+(d key #:else default) => (dict-ref d key default)
 ```
 
 And also when a `dict` is in the second position:
 
 ```racket
-(key dict)            => (dict-ref dict key)
-(key #f)              => #f
+;; Get
+(key d)  => (dict-ref d key)
+(key #f) => #f  ; unless (or (procedure? `key`) (dict? `key`))
 ```
 
-The last two variants plus the `~>` threading macro provide concise
-notation for accessing nested `dict`s (for example the nested
-`hasheq`s from Racket's `json` module):
+These last two variants, in combination with the `~>` threading macro,
+provide concise notation for accessing nested `dict`s (for example the
+nested `hasheq`s from Racket's `json` module):
 
 ```racket
 (~> dict 'a 'b 'c)
@@ -131,7 +136,7 @@ expands to:
 ('c ('b ('a dict)))
 ```
 
-which in turn expands to:
+which in turn is applied as:
 
 ```racket
 (dict-ref (dict-ref (dict-ref dict 'a) 'b) 'c)
