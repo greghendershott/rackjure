@@ -15,10 +15,10 @@
 (module+ test
   (require rackunit)
   
-  (check-equal? (if-let [x #t] 0 1) 0)
-  (check-equal? (if-let [x #f] 0 1) 1)
-  (check-equal? (if-let [x #t] x 0) #t)
+  (define (check-expansion input expected-output)
+    (check-equal? (syntax->datum (expand-once input))
+                  (syntax->datum expected-output)))
   
-  (check-equal? (when-let [x #t] 0 1) 1)
-  (check-equal? (when-let [x #f] 0 1) (void))
-  (check-equal? (when-let [x #t] x) #t))
+  (check-expansion #'(if-let [x #t] 0 1)   #'(let [(x #t)] (if x 0 1)))
+  
+  (check-expansion #'(when-let [x #t] 0 1) #'(let [(x #t)] (when x 0 1))))
