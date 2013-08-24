@@ -1,6 +1,6 @@
 #lang racket/base
 
-(provide if-let when-let)
+(provide if-let when-let if-not when-not)
 
 (require syntax/parse/define)
 
@@ -12,6 +12,12 @@
   (let ([binding value])
     (when binding body ...)))
 
+(define-simple-macro (if-not test:expr then:expr else:expr)
+  (if (not test) then else))
+
+(define-simple-macro (when-not test:expr body:expr ...+)
+  (when (not test) body ...))
+
 (module+ test
   (require rackunit)
   
@@ -21,4 +27,8 @@
   
   (check-expansion #'(if-let [x #t] 0 1)   #'(let [(x #t)] (if x 0 1)))
   
-  (check-expansion #'(when-let [x #t] 0 1) #'(let [(x #t)] (when x 0 1))))
+  (check-expansion #'(when-let [x #t] 0 1) #'(let [(x #t)] (when x 0 1)))
+  
+  (check-expansion #'(if-not #t 0 1)       #'(if (not #t) 0 1))
+  
+  (check-expansion #'(when-not #t 0 1)     #'(when (not #t) 0 1)))
