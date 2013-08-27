@@ -1,7 +1,7 @@
 language: c
 
 env:
- - RACKET_VERSION=5.3
+ - RACKET_VERSION=5.3.2
  - RACKET_VERSION=5.3.5
  - RACKET_VERSION=5.3.6
 

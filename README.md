@@ -13,7 +13,7 @@ Main features:
 - `str`
 - `if-let` and `when-let`
 
-> **NOTE**: This is tested on recent versions of Racket. If you find an issue using a Racket version older than 5.3, and for some reason you can't upgrade, please [report here](https://github.com/greghendershott/rackjure/issues) and I'll try to fix if possible.
+> **NOTE**: This is tested on recent versions of Racket. If you find an issue using a Racket version older than 5.3.2, and for some reason you can't upgrade, please [report here](https://github.com/greghendershott/rackjure/issues) and I'll try to fix if possible.
 
 ## Background/philosophy
 
