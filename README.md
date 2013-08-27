@@ -241,3 +241,7 @@ Examples:
   (displayln "OK... *drumroll*")
   (displayln (str "foo was set to " foo)))
 ```
+
+## `if-not` and `when-not`
+
+Handy shortcuts for `(if (not test) then else)` and `(when (not test) body ...+)`.
