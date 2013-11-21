@@ -75,7 +75,7 @@ The result of `bytes-length` will be "plugged in" as the first
 argument to `(number->string 16)`: `(number->string #|here|# 16)`.
 
 > **NOTE:** Unlike Clojure, `,` is not whitespace in Racket. If you
-> want a variation of the Cloure convention of using `,` to help show
+> want a variation of the Clojure convention of using `,` to help show
 > the insertion point, I suppose you could use `#||#` comments. But
 > you'll probably find you don't really need to.
 
