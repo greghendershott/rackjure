@@ -63,7 +63,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Return a {} style string describing the nestead dicts
+;; Return a {} style string describing the nested dicts
 (define (dict->curly-string d [depth 0] [indent 0])
   (define concat string-append)         ;minimize indent
   (define ~v (curry format "~v"))
