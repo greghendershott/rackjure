@@ -37,7 +37,9 @@
          alist?
          current-curly-dict)
 
-(require (for-syntax racket/base syntax/parse)
+(require (for-syntax racket/base
+                     syntax/parse
+                     racket/list)
          racket/dict
          "alist.rkt")
 
@@ -71,11 +73,13 @@
     (pattern (~seq k:expr v:expr)
              #:attr pair #'(k v)))
   (syntax-parse stx
-    ;; { dict literals }
-    [(_ kv:expr ...)
-     #:when (eq? (syntax-property stx 'paren-shape) #\{)
-     ;; #:fail-unless (zero? (remainder (length (syntax-e #'(kv ...))) 2))
-     ;; "Pairs of expressions"
+    ;; { ... } dict literals
+    [(_ kv:expr ...) #:when (eq? (syntax-property stx 'paren-shape) #\{)
+     (unless (zero? (remainder (length (syntax->list #'(kv ...))) 2))
+       (raise-syntax-error '|{ }|
+                           "expected even number of items for dictionary"
+                           (datum->syntax #f (cdr (syntax->list stx)) stx stx)
+                           (last (syntax->list #'(kv ...)))))
      #'((current-curly-dict) kv ...)]
     ;; Arities that might be dict applications
     [(_ x:expr y:expr)               #'(maybe-dict-ref x y)]

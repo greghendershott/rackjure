@@ -63,4 +63,7 @@
            'response (hasheq 'version 1.0
                              'headers (hasheq 'Content-Type "foo"
                                               'Content-Length 10))))
-  )
+
+  (check-exn exn:fail:syntax?
+             (lambda () (eval #'{0 1 2}))
+             "expected even number of items for dictionary"))
