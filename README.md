@@ -32,6 +32,23 @@ for a key, not just Clojure map `:keyword`s.
 
 When it must choose, `#lang rackjure` chooses to be more Rackety.
 
+## Installation
+
+To install Rackjure with Racket 5.3.4 and newer:
+
+```sh
+raco pkg install rackjure
+```
+
+On older versions of Racket (either you'll need Git or download the tarball
+and extract them manually):
+
+```sh
+git clone https://github.com/greghendershott/rackjure.git
+raco link rackjure
+raco setup rackjure
+```
+
 ## "Threading" macros `~>` and `~>>`
 
 The "threading" macros let you thread values through a series of
