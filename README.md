@@ -32,6 +32,26 @@ for a key, not just Clojure map `:keyword`s.
 
 When it must choose, `#lang rackjure` chooses to be more Rackety.
 
+## Installation
+
+Currently there's no PLaneT package available, so you will need Git to install
+Rackjure.  Please refer to your system's documentation on how to install Git.
+
+To install Rackjure with Racket 5.3.4 and newer:
+
+```sh
+git clone https://github.com/greghendershott/rackjure.git
+raco pkg install rackjure
+```
+
+On older versions of Racket:
+
+```sh
+git clone https://github.com/greghendershott/rackjure.git
+raco link rackjure
+raco setup rackjure
+```
+
 ## "Threading" macros `~>` and `~>>`
 
 The "threading" macros let you thread values through a series of
