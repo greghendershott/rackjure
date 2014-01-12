@@ -5,7 +5,8 @@
          "conditionals.rkt"
          "dict.rkt"
          "str.rkt"
-         "threading.rkt")
+         "threading.rkt"
+         "utils.rkt")
 
 (provide (except-out (all-from-out racket) #%app)
          (rename-out [-#%app #%app])
@@ -14,5 +15,6 @@
                        "conditionals.rkt"
                        "dict.rkt"
                        "str.rkt"
-                       "threading.rkt"))
+                       "threading.rkt"
+                       "utils.rkt"))
 

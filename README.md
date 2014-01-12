@@ -12,6 +12,7 @@ Main features:
 - Using `{` ... `}` to initialize dictionaries.
 - `str`
 - `if-let` and `when-let`
+- `partial`
 
 > **NOTE**: This is tested on recent versions of Racket. If you find an issue using a Racket version older than 5.3.2, and for some reason you can't upgrade, please [report here](https://github.com/greghendershott/rackjure/issues) and I'll try to fix if possible.
 
@@ -262,3 +263,8 @@ Examples:
 ## `if-not` and `when-not`
 
 Handy shortcuts for `(if (not test) then else)` and `(when (not test) body ...+)`.
+
+## `partial`
+
+Function for partial application. `((partial + 1) 2)` <=> `(+ 1 2)`.
+Differs from `curry` in that it doesn't care about function arity.
