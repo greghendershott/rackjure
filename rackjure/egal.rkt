@@ -1,6 +1,9 @@
-#lang racket
+#lang racket/base
 
 ;; all hail Baker! http://home.pipeline.com/~hbaker1/ObjectIdentity.html
+
+(require racket/stream
+         racket/set)
 
 (provide egal?)
 
