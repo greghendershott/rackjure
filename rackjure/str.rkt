@@ -17,8 +17,10 @@
 (define (str #:fmt [fmt (curry format "~a")] #:sep [sep ""] . xs)
   (string->immutable-string (string-join (map fmt xs) sep)))
 
-(module+ test
-  (require rackunit)
+(module* test racket/base
+  (require (submod "..")
+           rackunit
+           (only-in racket/function curry thunk))
   (check-equal? (str) "")
   (check-equal? (str "hi") "hi")
   (check-equal? (str 1) "1")
