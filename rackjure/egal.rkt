@@ -17,6 +17,7 @@
         [(and (sequence? x) (sequence? y)) (egal-sequence? x y)]
         [(and (procedure? x) (procedure? y)) (egal-procedure? x y)]
         [(and (void? x) (void? y) #t)]
+        [(and (pair? x) (pair? y)) (equal? x y)]
         [else (eq? x y)]))
 
 (define (egal-procedure? x y)
@@ -32,7 +33,6 @@
             [else (eq? x y)])
       ;; the immutable? predicate is undefined on most types
       (cond [(and (stream? x) (stream? y)) (egal-elements? x y)]
-            [(and (pair? x) (pair? y)) (egal-elements? x y)]
             [(and (set? x) (set? y)) (egal-elements? x y)]
             [else (eq? x y)])))
 
