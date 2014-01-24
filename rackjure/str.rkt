@@ -8,7 +8,7 @@
         (#:fmt (any/c . -> . string?) #:sep string?)
         #:rest list?
         . ->* .
-        string?)]))
+        (and/c immutable? string?))]))
 
 ;; #:fmt: The function to apply. Defaults to ~a. Could be ~v, or
 ;; anything that returns a string?
