@@ -9,13 +9,13 @@
         #:rest list?
         . ->* .
         string?)]))
-    
+
 ;; #:fmt: The function to apply. Defaults to ~a. Could be ~v, or
 ;; anything that returns a string?
 ;;
 ;; #:sep: A string to add between each. Defaults to "".
 (define (str #:fmt [fmt (curry format "~a")] #:sep [sep ""] . xs)
-  (string-join (map fmt xs) sep))
+  (string->immutable-string (string-join (map fmt xs) sep)))
 
 (module+ test
   (require rackunit)
