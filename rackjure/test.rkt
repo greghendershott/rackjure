@@ -64,6 +64,8 @@
                              'headers (hasheq 'Content-Type "foo"
                                               'Content-Length 10))))
 
+  ;; {} with odd number of elements raises exn:fail:syntax
   (check-exn exn:fail:syntax?
-             (lambda () (eval #'{0 1 2}))
+             (thunk (eval #'(module m rackjure
+                              {0 1 2})))
              "expected even number of items for dictionary"))
