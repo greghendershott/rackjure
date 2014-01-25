@@ -14,6 +14,7 @@ Main features:
 - `if-let` and `when-let`
 - `if-not` and `when-not`
 - `partial`
+- `egal?`
 
 > **NOTE**: This is tested on recent versions of Racket. If you find an issue using a Racket version older than 5.3.2, and for some reason you can't upgrade, please [report here](https://github.com/greghendershott/rackjure/issues) and I'll try to fix if possible.
 
@@ -214,6 +215,9 @@ with a `(f k0 v0 k1 v1 ... ...)` signature.
 
 `str` can be a succinct alternative to `string-append` or `format`.
 
+Also, it returns an immutable string (created via
+`string->immutable-string`).
+
 Examples:
 
 ```racket
@@ -227,11 +231,11 @@ Examples:
 (apply str '(0 1 2 3 4 5 6 7 8 9))  => "0123456789"
 ```
 
-Our version adds optional keyword arguments, the defaults behave like
-Clojure's `str`.
+Our version adds optional keyword arguments, the defaults of which
+behave like Clojure's `str`.
 
 - `#:fmt`: The function to apply to each argument. Defaults to
-           `~a`. May instead be `~v` or any `(any/c -> string?)` function.
+           `~a`. May be any `(any/c -> string?)` function, e.g. `~v`.
 
 - `#:sep`: A `string?` to add between each. Defaults to `""`.
 
@@ -269,3 +273,34 @@ Handy shortcuts for `(if (not test) then else)` and `(when (not test) body ...+)
 
 Function for partial application. `((partial + 1) 2)` <=> `(+ 1 2)`.
 Differs from `curry` in that it doesn't care about function arity.
+
+## `egal?`
+
+An implementation of `egal?` as described in
+[_Equal Rights for Functional Objects_]. An alternative to `equal?`
+and `eq?` that says whether two things are "operationally equivalent",
+by taking into account mutability.
+
+[_Equal Rights for Functional Objects_]: http://home.pipeline.com/~hbaker1/ObjectIdentity.html
+
+In general, two things that are `equal?` will also be `egal?` only if
+they are both immutable. Some things in Racket aren't immutable by
+default. For example, although `"string constants"` are immutable,
+strings returned by `string` or `string-join` are not, unless you also
+run them through `string->immutable-string`. Same with `bytes`. Many
+things come in both mutable and immutable variants, such as hashes and
+vectors.
+
+For more details, see [`egal.rkt`] for the implementation and test
+cases. A few examples:
+
+```racket
+;; Although "string" literals are immutable, `string` isn't
+(egal? "a" "b") ; #f
+(egal? "a" "a") ; #t
+(egal? (string #\a) (string #\a)) ; #f (because neither is immutable)
+(egal? (string->immutable-string (string #\a))
+       (string->immutable-string (string #\a))) ; #t (b/c both are immutable)
+```
+
+[`egal.rkt`]: https://github.com/greghendershott/rackjure/blob/master/rackjure/egal.rkt
