@@ -303,4 +303,8 @@ cases. A few examples:
        (string->immutable-string (string #\a))) ; #t (b/c both are immutable)
 ```
 
+> **CAVEAT**: Currently this does _not_ work for Racket `struct`s:
+> `egal?` will return `#f` even when the two `struct`s are instances
+> of a struct type that does _not_ use `#:mutable`.
+
 [`egal.rkt`]: https://github.com/greghendershott/rackjure/blob/master/rackjure/egal.rkt
