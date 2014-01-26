@@ -7,6 +7,10 @@
 
 (provide egal?)
 
+(module+ test
+  (require rackunit
+           racket))
+
 (define (egal? x y)
   (cond [(and (boolean? x) (boolean? y)) (eq? x y)]
         [(and (number? x) (number? y)) (eqv? x y)]
@@ -18,7 +22,12 @@
         [(and (procedure? x) (procedure? y)) (egal-procedure? x y)]
         [(and (void? x) (void? y) #t)]
         [(and (pair? x) (pair? y)) (equal? x y)]
+        [(and (struct? x) (struct? y)) (egal-struct? x y)]
         [else (eq? x y)]))
+
+(define (egal-struct? x y)
+  (and (immutable-struct? x) (immutable-struct? y)
+       (equal? x y)))
 
 (define (egal-procedure? x y)
   ;; As far as I know, source/environment isn't available for procedures
@@ -41,9 +50,7 @@
       (and (egal? (stream-first x) (stream-first y))
            (egal-elements? (stream-rest x) (stream-rest y)))))
 
-(module* test racket
-  (require (submod "..")
-           rackunit)
+(module+ test
   (define-syntax (== stx)
     (syntax-case stx ()
       [(_ x y) (syntax/loc stx
@@ -83,6 +90,12 @@
   ;; Note that `pair`s are _not_ sequence?
   (== (cons 0 0) (cons 0 0))
   (!= (cons 0 0) (cons 1 1))
+  ;; struct?
+  (let ()
+    (struct immutable (fld) #:transparent)
+    (== (immutable 0) (immutable 0))
+    (struct mutable (fld) #:mutable #:transparent)
+    (!= (mutable 0) (mutable 0)))
 
   ;;
   ;; sequences
@@ -128,3 +141,44 @@
 
   (== (set 0) (set 0))
   (!= (set 0) (set 1)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; `struct` immutability
+
+;; As documented, `immutable?` does not work with `struct`s. Define a
+;; predicate that does:
+(define (immutable-struct? v)
+  (define-values (st skipped?) (struct-info v))
+  (and (not skipped?) ;unless most-specific type, can't assert immutability
+       (immutable-struct-type? st)))
+
+(define (immutable-struct-type? st)
+  (define-values (name init-field-cnt auto-field-cnt
+                  accessor-proc mutator-proc
+                  immutable-k-list
+                  super-type skipped?) (struct-type-info st))
+  (and (not skipped?) ;unless most-specific type, can't assert immutability
+       ;; A struct-type is immutable if all its fields are immutable
+       (= (+ init-field-cnt auto-field-cnt)
+          (length immutable-k-list))
+       ;; AND all its super struct-types are immutable
+       (or (not super-type)
+           (immutable-struct-type? super-type))))
+
+(module+ test
+  (struct mutable (fld) #:mutable #:transparent)
+  (define m (mutable 0))
+  (check-false (immutable-struct? m))
+
+  (struct mutable:immutable mutable (fld2) #:transparent)
+  (define m:i (mutable:immutable 0 1))
+  (check-false (immutable-struct? m:i))
+
+  (struct immutable (fld) #:transparent)
+  (define i (immutable 0))
+  (check-true (immutable-struct? i))
+
+  (struct immutable:immutable immutable (fld2) #:transparent)
+  (define i:i (immutable:immutable 0 1))
+  (check-true (immutable-struct? i:i)))

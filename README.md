@@ -303,8 +303,22 @@ cases. A few examples:
        (string->immutable-string (string #\a))) ; #t (b/c both are immutable)
 ```
 
-> **CAVEAT**: Currently this does _not_ work for Racket `struct`s:
-> `egal?` will return `#f` even when the two `struct`s are instances
-> of a struct type that does _not_ use `#:mutable`.
-
 [`egal.rkt`]: https://github.com/greghendershott/rackjure/blob/master/rackjure/egal.rkt
+
+### `egal?` and `struct`s
+
+For two `struct`s to be `egal?`, all of the following must be true:
+
+1. They must have the same field values.
+
+2. They must be instances of the same structure type.
+
+3. The structure type must be `#:transparent`.
+
+    Regular `equal?` does a field comparison for Racket `struct`s only
+    if they are `#:transparent`; otherwise the `struct`s are opaque
+    and `eq?` is used.
+
+4. The structure type must not be `#:mutable`, nor must any of the
+   individual fields be `#:mutable`.
+
