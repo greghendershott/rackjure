@@ -15,6 +15,7 @@ Main features:
 - `if-not` and `when-not`
 - `partial`
 - `egal?`
+- `box-swap!`
 
 > **NOTE**: This is tested on recent versions of Racket. If you find an issue using a Racket version older than 5.3.2, and for some reason you can't upgrade, please [report here](https://github.com/greghendershott/rackjure/issues) and I'll try to fix if possible.
 
@@ -322,3 +323,8 @@ For two `struct`s to be `egal?`, all of the following must be true:
 4. The structure type must not be `#:mutable`, nor must any of the
    individual fields be `#:mutable`.
 
+## `box-swap!`
+
+Like `swap!` in Clojure, but for [boxes][].
+
+  [boxes]: http://docs.racket-lang.org/reference/boxes.html
