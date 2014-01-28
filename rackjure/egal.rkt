@@ -51,96 +51,96 @@
            (egal-elements? (stream-rest x) (stream-rest y)))))
 
 (module+ test
-  (define-syntax (== stx)
+  (define-syntax (= stx)
     (syntax-case stx ()
       [(_ x y) (syntax/loc stx
                  (check-true (egal? x y)))]))
-  (define-syntax (!= stx)
+  (define-syntax (≠ stx)
     (syntax-case stx ()
       [(_ x y) (syntax/loc stx
                  (check-false (egal? x y)))]))
   ;; boolean?
-  (== #t #t)
-  (!= #t #f)
+  (= #t #t)
+  (≠ #t #f)
   ;; number?
-  (== 0 0)
-  (== 0.0 0.0)
-  (== 1/2 1/2)
-  (!= 0 1)
-  (!= 0.0 1.0)
-  (!= 1/2 2/1)
+  (= 0 0)
+  (= 0.0 0.0)
+  (= 1/2 1/2)
+  (≠ 0 1)
+  (≠ 0.0 1.0)
+  (≠ 1/2 2/1)
   ;; char?
-  (== #\a #\a)
-  (!= #\a #\b)
+  (= #\a #\a)
+  (≠ #\a #\b)
   ;; symbol?
-  (== 'a 'a)
-  (!= 'a 'b)
+  (= 'a 'a)
+  (≠ 'a 'b)
   ;; box?
   (let ([a (box 'a)]
         [b (box 'b)])
-    (== a a)
-    (!= a b))
+    (= a a)
+    (≠ a b))
   ;; regexp?
-  (== #rx"a" #rx"a")
-  (!= #rx"a" #rx"b")
-  (== #px"a" #px"a")
-  (!= #px"a" #px"b")
+  (= #rx"a" #rx"a")
+  (≠ #rx"a" #rx"b")
+  (= #px"a" #px"a")
+  (≠ #px"a" #px"b")
   ;; void?
-  (== (void) (void))
+  (= (void) (void))
   ;; Note that `pair`s are _not_ sequence?
-  (== (cons 0 0) (cons 0 0))
-  (!= (cons 0 0) (cons 1 1))
+  (= (cons 0 0) (cons 0 0))
+  (≠ (cons 0 0) (cons 1 1))
   ;; struct?
   (let ()
     (struct immutable (fld) #:transparent)
-    (== (immutable 0) (immutable 0))
+    (= (immutable 0) (immutable 0))
     (struct mutable (fld) #:mutable #:transparent)
-    (!= (mutable 0) (mutable 0)))
+    (≠ (mutable 0) (mutable 0)))
 
   ;;
   ;; sequences
   ;;
 
   ;; Although "string" literals are immutable, `string` isn't
-  (== "a" "a")
-  (!= "a" "b")
-  (!= (string #\a) (string #\a))
-  (== (string->immutable-string (string #\a))
+  (= "a" "a")
+  (≠ "a" "b")
+  (≠ (string #\a) (string #\a))
+  (= (string->immutable-string (string #\a))
       (string->immutable-string (string #\a)))
 
   ;; Although #"bytes" literals are immutable, `bytes` isn't
-  (== #"a" #"a")
-  (!= #"a" #"b")
-  (!= (bytes 0) (bytes 0))
-  (== (bytes->immutable-bytes (bytes 0))
+  (= #"a" #"a")
+  (≠ #"a" #"b")
+  (≠ (bytes 0) (bytes 0))
+  (= (bytes->immutable-bytes (bytes 0))
       (bytes->immutable-bytes (bytes 0)))
 
   ;; Although #(0) literals are immutable (as is obviously
   ;; `vector-immutable`), `vector` isn't.
-  (== #(0) #(0))
-  (!= #(0) #(1))
-  (!= (vector 0) (vector 0))
-  (== (vector-immutable 0) (vector-immutable 0))
+  (= #(0) #(0))
+  (≠ #(0) #(1))
+  (≠ (vector 0) (vector 0))
+  (= (vector-immutable 0) (vector-immutable 0))
 
   ;; immutable hash variants...
-  (== (hash 0 0) (hash 0 0))
-  (!= (hash 0 0) (hash 0 1))
-  (== (hasheq '0 0) (hasheq '0 0))
-  (!= (hasheq '0 0) (hasheq '0 1))
-  (== (make-immutable-hash '([0 0])) (make-immutable-hash '([0 0])))
-  (!= (make-immutable-hash '([0 0])) (make-immutable-hash '([0 1])))
-  (== (make-immutable-hasheq '([k 0])) (make-immutable-hasheq '([k 0])))
-  (!= (make-immutable-hasheq '([k 0])) (make-immutable-hasheq '([k 1])))
+  (= (hash 0 0) (hash 0 0))
+  (≠ (hash 0 0) (hash 0 1))
+  (= (hasheq '0 0) (hasheq '0 0))
+  (≠ (hasheq '0 0) (hasheq '0 1))
+  (= (make-immutable-hash '([0 0])) (make-immutable-hash '([0 0])))
+  (≠ (make-immutable-hash '([0 0])) (make-immutable-hash '([0 1])))
+  (= (make-immutable-hasheq '([k 0])) (make-immutable-hasheq '([k 0])))
+  (≠ (make-immutable-hasheq '([k 0])) (make-immutable-hasheq '([k 1])))
   ;; mutable hash variants...
-  (!= (make-hash '([0 0])) (make-hash '([0 0])))
-  (!= (make-hasheq '([k 0])) (make-hash '([k 0])))
+  (≠ (make-hash '([0 0])) (make-hash '([0 0])))
+  (≠ (make-hasheq '([k 0])) (make-hash '([k 0])))
 
   ;; stream? is true of many things we test here, but just use `list`
-  (== (list 0 0) (list 0 0))
-  (!= (list 0 0) (list 1 1))
+  (= (list 0 0) (list 0 0))
+  (≠ (list 0 0) (list 1 1))
 
-  (== (set 0) (set 0))
-  (!= (set 0) (set 1)))
+  (= (set 0) (set 0))
+  (≠ (set 0) (set 1)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
