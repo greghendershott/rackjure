@@ -1,5 +1,7 @@
 #lang racket/base
 
+(require version/utils)
+
 (provide partial box-swap!)
 
 (module+ test
@@ -26,7 +28,7 @@
           (loop)))))
 
 (define (racket-5.92+?)
-  (string>=? (version) "5.92"))
+  (version<=? "5.92" (version)))
 
 (define box-swap!
   (cond [(racket-5.92+?) -box-swap!]
