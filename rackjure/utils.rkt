@@ -34,20 +34,22 @@
 
 (module+ test
   (require racket/future)
-  (when (racket-5.92+?)
-    (define shared (box 0))
-    (define n-iterations 10000000)
-    (define n-futures 10)
+  (cond [(racket-5.92+?)
+         (define shared (box 0))
+         (define n-iterations 10000000)
+         (define n-futures 10)
 
-    (define (futures)
-      (define (thunk)
-        (for ([_ (in-range n-iterations)])
-          ;; Use `+ 1` instead of `add1` to exercise `box-swap!`
-          (box-swap! shared + 1)))
+         (define (futures)
+           (define (thunk)
+             (for ([_ (in-range n-iterations)])
+               ;; Use `+ 1` instead of `add1` to exercise `box-swap!`
+               (box-swap! shared + 1)))
 
-      (for/list ([_ n-futures])
-        (future thunk)))
+           (for/list ([_ n-futures])
+             (future thunk)))
 
-    (for ([f (futures)])
-      (touch f))
-    (check-equal? (unbox shared) (* n-iterations n-futures))))
+         (for ([f (futures)])
+           (touch f))
+         (check-equal? (unbox shared) (* n-iterations n-futures))]
+        [else
+         (check-exn exn:fail? (lambda () (box-swap! (box 0) + 1)))]))
