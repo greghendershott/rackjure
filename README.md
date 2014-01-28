@@ -325,6 +325,6 @@ For two `struct`s to be `egal?`, all of the following must be true:
 
 ## `box-swap!`
 
-Like `swap!` in Clojure, but for [boxes][].
+Like `swap!` in Clojure, but for [boxes]. Requires Racket 5.92+.
 
-  [boxes]: http://docs.racket-lang.org/reference/boxes.html
+[boxes]: http://docs.racket-lang.org/reference/boxes.html
