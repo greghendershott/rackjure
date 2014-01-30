@@ -96,36 +96,30 @@
     (require (submod ".." "..")) ;; for ~>
     (check-equal? (~> 1 (+ 1) (* 2) (+ 1))
                   5)
-    (define expand/datum (compose1 syntax->datum expand))
-    (check-equal? (~> 1 (+ 1) (* 2) (+ 1))
-                  5)
-    (check-equal? (expand/datum #'(+ 1 1))
-                  '(#%app + '1 '1))
-    (check-equal? (expand/datum #'(~> 1 (+ 1)))
-                  '(#%app + '1 '1)))
+    (let ([d (hasheq 'a 42)])
+      ;; these should NOT work without custom #%app
+      (check-exn exn:fail? (lambda () (d 'a)))
+      (check-exn exn:fail? (lambda () (~> 'a d)))
+      (check-exn exn:fail? (lambda () ('a d)))
+      (check-exn exn:fail? (lambda () (~> d 'a)))))
   (require 'plain)
   ;; Confirm expansion using applicative dict #%app
   (module dict racket/base
-    (require (submod ".." "..")) ;; for ~>
     (require rackunit)
+    (require (submod ".." "..")) ;; for ~>
     (require (rename-in "app.rkt" [-#%app #%app]))
     (check-equal? (~> 1 (+ 1) (* 2) (+ 1))
                   5)
+    ;; these SHOULD work with custom #%app
     (let ([d (hasheq 'a 42)])
       (check-equal? (d 'a) 42)
       (check-equal? (~> 'a d) 42)
       (check-equal? ('a d) 42)
-      (check-equal? (~> d 'a) 42)
-      )
+      (check-equal? (~> d 'a) 42))
     ;; Nested using ~> (threading macro)
     (check-equal? (~> (hasheq 'a (hasheq 'b (hasheq 'c 42)))
                       'a 'b 'c)
-                  42)
-    (define expand/datum (compose1 syntax->datum expand))
-    (check-equal? (expand/datum #'(+ 1 1))
-                  '(#%app maybe-dict-set + '1 '1))
-    (check-equal? (expand/datum #'(~> 1 (+ 1)))
-                  '(#%app maybe-dict-set + '1 '1)))
+                  42))
   (require 'dict)
   ;; Confirm still works with syntax forms as well as function #%app.
   (check-true (~> #t (if #t #f))))
