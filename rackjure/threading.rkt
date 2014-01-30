@@ -125,8 +125,7 @@
     (check-equal? (expand/datum #'(+ 1 1))
                   '(#%app maybe-dict-set + '1 '1))
     (check-equal? (expand/datum #'(~> 1 (+ 1)))
-                  '(#%app maybe-dict-set + '1 '1))
-    )
+                  '(#%app maybe-dict-set + '1 '1)))
   (require 'dict)
   ;; Confirm still works with syntax forms as well as function #%app.
   (check-true (~> #t (if #t #f))))
