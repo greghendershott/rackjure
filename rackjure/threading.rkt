@@ -1,8 +1,9 @@
 #lang racket/base
 
-(provide ~> ~>>)
+(provide ~> ~>> some~> some~>>)
 
 (require (for-syntax racket/base syntax/stx syntax/parse))
+(require (only-in "conditionals.rkt" if-let))
 
 ;; Clojure threading macros. Original versions courtesy of Asumu
 ;; Takikawa.
@@ -48,6 +49,16 @@
   (threading-syntax-parser
    (lambda (form nested-form)
      (syntax-parse form [(f r ...) #`(f r ... #,nested-form)]))))
+
+(define-syntax some~>
+  (threading-syntax-parser
+   (lambda (form nested-form)
+     #`(if-let [tmp #,nested-form] (~> tmp #,form) #f))))
+
+(define-syntax some~>>
+  (threading-syntax-parser
+   (lambda (form nested-form)
+     #`(if-let [tmp #,nested-form] (~>> tmp #,form) #f))))
 
 (module* test racket/base
   (require (submod ".."))
@@ -102,4 +113,16 @@
                   42))
   (require 'dict)
   ;; Confirm still works with syntax forms as well as function #%app.
-  (check-true (~> #t (if #t #f))))
+  (check-true (~> #t (if #t #f)))
+  
+  (check-equal? (some~> 1 (/ 2)) 1/2)
+  
+  (check-equal? (some~>> 1 (/ 2)) 2)
+  
+  (check-equal? (some~> #f add1) #f)
+  
+  (check-equal? (some~>> #f add1) #f)
+  
+  (check-equal? (some~> 1 ((lambda _ #f)) add1) #f)
+  
+  (check-equal? (some~>> 1 ((lambda _ #f)) add1) #f))
