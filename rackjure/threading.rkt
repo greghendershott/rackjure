@@ -30,23 +30,24 @@
       [ form      #'(form)]))
 
   (define ((keep-stxctx f) stx . args)
-    (datum->syntax stx (syntax-e (apply f stx args))))  
+    (datum->syntax stx (syntax-e (apply f stx args))))
 
   (define (threading-syntax-parser threader)
     (syntax-parser
       [(_ first rest ...)
-       (define normalized-rest (stx-map (keep-stxctx stx-coerce-to-list) #'(rest ...)))
+       (define normalized-rest (stx-map (keep-stxctx stx-coerce-to-list)
+                                        #'(rest ...)))
        (foldl (keep-stxctx threader) #'first normalized-rest)])))
 
 (define-syntax ~>
   (threading-syntax-parser
-    (lambda (form nested-form)
-      (syntax-parse form [(f r ...) #`(f #,nested-form r ...)]))))
+   (lambda (form nested-form)
+     (syntax-parse form [(f r ...) #`(f #,nested-form r ...)]))))
 
 (define-syntax ~>>
   (threading-syntax-parser
-    (lambda (form nested-form)
-      (syntax-parse form [(f r ...) #`(f r ... #,nested-form)]))))
+   (lambda (form nested-form)
+     (syntax-parse form [(f r ...) #`(f r ... #,nested-form)]))))
 
 (module* test racket/base
   (require (submod ".."))
