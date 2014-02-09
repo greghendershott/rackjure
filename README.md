@@ -8,6 +8,7 @@ Clojure conflict, prefer Racket.
 Main features:
 
 - Threading macros `~>` and `~>>`.
+- Threading macros `some~>` and `some~>>`.
 - Applicable dictionaries.
 - Using `{` ... `}` to initialize dictionaries.
 - `str`
@@ -116,6 +117,9 @@ specified this way. As a result, `~>` can also be used as a kind of
 The `~>>` macro "threads" values through a series of function
 applications as the _last_ argument to each one.
 
+## "Threading" macros `some~>` and `some~>>`
+
+Analogous to `some->` and `some->>` in Clojure, i.e. stop threading at a `#f` value.
 
 ## Applicable `dict`s
 
