@@ -2,7 +2,7 @@
 
 (provide ~> ~>>)
 
-(require (for-syntax racket/base syntax/parse))
+(require (for-syntax racket/base syntax/stx syntax/parse))
 
 ;; Clojure threading macros. Original versions courtesy of Asumu
 ;; Takikawa.
@@ -11,70 +11,42 @@
 ;; is bound in the lexical context of the macro usage. That way, these
 ;; will expand to the default Racket #%app, or to the applicative
 ;; dictionary #%app from app.rkt that's part of #lang rackjure, or to
-;; whatever other #%app is bound at the macro usage site.
+;; whatever other #%app is bound at the macro usage site. This is
+;; handled by the keep-stxctx combinator.
 ;;
 ;; Among other things this allows using `(require rackjure/threading)`
 ;; to get ~> and ~>> without the applicative dict overhead associated
 ;; with #lang rackjure.
+;;
+;; Also rewritten to use a fold instead of recursive invocations to
+;; avoid the issues described in CLJ-1121.
 
-;; The rewrite somewhat obfuscates the original logic. When reading
-;; the code below, keep in mind that:
-;;
-;; - `op` means the ~> or ~>> used to invoke the macro. We need its
-;;   lexical context!
-;;
-;; - Whenever the macro recursively expands to another pattern
-;;   variation of itself, it is careful to use `op` to pass through
-;;   and preserve the original lexical context. We need it!
-;;
-;; - On the terminal patterns, the macro needs to use the lexical
-;;   context of `op` for "the parens" -- for the cons or list -- of
-;;   the expanded form. For example, instead of a template like:
-;;
-;;       #'(e x e_1 ...)
-;;
-;;   it must be:
-;;
-;;       (datum->syntax #'op (cons #'e #'(x e_1 ...))).
-;;
-;;   This correctly handles both cases, where `e` is a function
-;;   binding (a "function call") and where it is a transformer binding
-;;   (a "macro call").
-;;
-;;   - If the form is a function application, the expander will use
-;;     whatever #%app is bound in the lexical context where the macro
-;;     is used.
-;;
-;;   - If the form uses a transformer binding (it is a "macro call"),
-;;     the expander will handle it as usual. (An earlier version of
-;;     this always injected an #%app, which prevented ~> and ~>>
-;;     continuing to work with macros.)
+(begin-for-syntax 
+  (define stx-coerce-to-list
+    (syntax-parser
+      [((~literal quote) x) #'((quote x))]
+      ;; ^ We want to end up with ((quote x) y), NOT (quote x y).
+      [(form ...) #'(form ...)]
+      [ form      #'(form)]))
 
-(define-syntax (~> stx)
-  (syntax-parse stx
-    [(_ x)
-     #'x]
-    [(op x ((~literal quote) e))   ;want ((quote e) x), NOT (quote e x)
-     (datum->syntax #'op (list #'(quote e) #'x))] ;#'((quote e) x)
-    [(op x (e e_1 ...))
-     (datum->syntax #'op (cons #'e #'(x e_1 ...)))] ;#'(e x e_1 ...)
-    [(op x e)
-    #`(op x (e))]                       ;(~> x (e))
-    [(op x form form_1 ...)
-     #'(op (op x form) form_1 ...)]))   ;(~> (~> x form) form_1 ..)
+  (define ((keep-stxctx f) stx . args)
+    (datum->syntax stx (syntax-e (apply f stx args))))  
 
-(define-syntax (~>> stx)
-  (syntax-parse stx
-    [(_ x)
-     #'x]
-    [(op x ((~literal quote) e))   ;want ((quote a) x), NOT (quote x a)
-     (datum->syntax #'op (list #'(quote e) #'x))] ;#'((quote e) x)
-    [(op x (e e_1 ...))
-     (datum->syntax #'op (cons #'e #'(e_1 ... x)))] ;#'(e e_1 ... x)
-    [(op x e)
-     #'(op x (e))]                      ;(~>> x (e)
-    [(op x form form_1 ...)
-     #'(op (op x form) form_1 ...)]))   ;(~>> (~>> x form) form_1 ...)
+  (define (threading-syntax-parser threader)
+    (syntax-parser
+      [(_ first rest ...)
+       (define normalized-rest (stx-map (keep-stxctx stx-coerce-to-list) #'(rest ...)))
+       (foldl (keep-stxctx threader) #'first normalized-rest)])))
+
+(define-syntax ~>
+  (threading-syntax-parser
+    (lambda (form nested-form)
+      (syntax-parse form [(f r ...) #`(f #,nested-form r ...)]))))
+
+(define-syntax ~>>
+  (threading-syntax-parser
+    (lambda (form nested-form)
+      (syntax-parse form [(f r ...) #`(f r ... #,nested-form)]))))
 
 (module* test racket/base
   (require (submod ".."))
@@ -90,6 +62,8 @@
                 (/ 3 4))
   (check-equal? (~>> 1 add1)
                 2)
+  (check-equal? (~>> 1 + (~>> 1 +)) ;; see CLJ-1121
+                 2)
   ;; Confirm expansion using default #%app
   (module plain racket/base
     (require rackunit)
