@@ -63,8 +63,13 @@
                 (/ 3 4))
   (check-equal? (~>> 1 add1)
                 2)
-  (check-equal? (~>> 1 + (~>> 1 +)) ;; see CLJ-1121
-                 2)
+  (check-equal? (~>> 1 + (~>> 1 +)) ;example from  CLJ-1121
+                2)
+  (check-equal? (~> #t (if #t #f)) ;work with `if` form
+                #t)
+  (require racket/match)
+  (check-equal? (~> #t (match [#t #t][_ #f])) ;work with `match` form
+                #t)
   ;; Confirm expansion using default #%app
   (module plain racket/base
     (require rackunit)
