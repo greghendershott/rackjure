@@ -96,9 +96,15 @@
     (require (submod ".." "..")) ;; for ~>
     (require "check-expansion.rkt")
     (define-namespace-anchor a)
+    ;; 1. Directly; expanding ~> macro
+    (check-expand-fully a
+                        #'(~> 1 +)
+                        #'(#%app + (quote 1)))
+    ;; 2. Indirectly; no implicit require of wrong #%app
     (check-expand-fully a
                         #'((hasheq 'a 42) 'a)
-                        #'(#%app (hasheq (quote a) 42) (quote a))))
+                        #'(#%app (#%app hasheq (quote a) (quote 42))
+                                 (quote a))))
   (require 'test-plain-app))
 
 ;; Confirm expansion using our applicative dict #%app
@@ -109,7 +115,14 @@
     (require (rename-in "app.rkt" [-#%app #%app]))
     (require "check-expansion.rkt")
     (define-namespace-anchor a)
+    ;; 1. Directly; expanding ~> macro
+    (check-expand-fully a
+                        #'(~> 1 +)
+                        #'(#%app maybe-dict-ref + (quote 1)))
+    ;; 2. Indirectly; no implicit require of wrong #%app
     (check-expand-fully a
                         #'((hasheq 'a 42) 'a)
-                        #'(maybe-dict-ref (hasheq (quote a) 42) (quote a))))
+                        #'(#%app maybe-dict-ref
+                                 (#%app maybe-dict-set
+                                        hasheq (quote a) (quote 42)) (quote a))))
   (require 'test-dict-app))
