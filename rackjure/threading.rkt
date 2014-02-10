@@ -29,20 +29,20 @@
 (begin-for-syntax 
   (define stx-coerce-to-list
     (syntax-parser
-      [((~literal quote) x) #'((quote x))]
-      ;; ^ We want to end up with ((quote x) y), NOT (quote x y).
-      [(form ...) #'(form ...)]
-      [ form      #'(form)]))
+     [((~literal quote) x) #'((quote x))]
+     ;; ^ We want to end up with ((quote x) y), NOT (quote x y).
+     [(form ...) #'(form ...)]
+     [ form      #'(form)]))
 
   (define ((keep-stxctx f) stx . args)
     (datum->syntax stx (syntax-e (apply f stx args))))
 
   (define (threading-syntax-parser threader)
     (syntax-parser
-      [(_ first rest ...)
-       (define normalized-rest (stx-map (keep-stxctx stx-coerce-to-list)
-                                        #'(rest ...)))
-       (foldl (keep-stxctx threader) #'first normalized-rest)])))
+     [(_ first rest ...)
+      (define normalized-rest (stx-map (keep-stxctx stx-coerce-to-list)
+                                       #'(rest ...)))
+      (foldl (keep-stxctx threader) #'first normalized-rest)])))
 
 (module+ test
   (define-syntax test-threader
