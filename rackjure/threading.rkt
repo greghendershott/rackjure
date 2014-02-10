@@ -5,6 +5,9 @@
 (require (for-syntax racket/base syntax/stx syntax/parse))
 (require (only-in "conditionals.rkt" if-let))
 
+(module+ test
+  (require rackunit racket))
+
 ;; Clojure threading macros. Original versions courtesy of Asumu
 ;; Takikawa.
 ;;
@@ -45,10 +48,28 @@
    (lambda (form nested-form)
      (syntax-parse form [(f r ...) #`(f #,nested-form r ...)]))))
 
+(module+ test
+  (check-equal? (~> 1 (+ 1) (* 2) (+ 1)) 5)
+  (check-equal? (~> "a b c d"
+                    string-upcase
+                    (string-replace "A" "X")
+                    (string-split " ")
+                    car)
+                "X")
+  ;; Confirm still works with syntax forms as well as function #%app.
+  (check-true (~> #t (if #t #f)))
+  (require racket/match)
+  (check-true (~> #t (match [#t #t][_ #f]))))
+
 (define-syntax ~>>
   (threading-syntax-parser
    (lambda (form nested-form)
      (syntax-parse form [(f r ...) #`(f r ... #,nested-form)]))))
+
+(module+ test
+  (check-equal? (~>> 5 (+ 3) (/ 2) (- 1)) (/ 3 4))
+  (check-equal? (~>> 1 add1) 2)
+  (check-equal? (~>> 1 + (~>> 1 +)) 2)) ;example from  CLJ-1121
 
 (define-syntax some~>
   (threading-syntax-parser
@@ -60,69 +81,48 @@
    (lambda (form nested-form)
      #`(if-let [tmp #,nested-form] (~>> tmp #,form) #f))))
 
-(module* test racket/base
-  (require (submod ".."))
-  (require rackunit
-           (only-in racket/string string-split string-replace))
-  (check-equal? (~> "a b c d"
-                    string-upcase
-                    (string-replace "A" "X")
-                    (string-split " ")
-                    car)
-                "X")
-  (check-equal? (~>> 5 (+ 3) (/ 2) (- 1))
-                (/ 3 4))
-  (check-equal? (~>> 1 add1)
-                2)
-  (check-equal? (~>> 1 + (~>> 1 +)) ;example from  CLJ-1121
-                2)
-  (check-equal? (~> #t (if #t #f)) ;work with `if` form
-                #t)
-  (require racket/match)
-  (check-equal? (~> #t (match [#t #t][_ #f])) ;work with `match` form
-                #t)
-  ;; Confirm expansion using default #%app
-  (module plain racket/base
+(module+ test
+  (check-equal? (some~> 1 (/ 2)) 1/2)
+  (check-equal? (some~>> 1 (/ 2)) 2)
+  (check-equal? (some~> #f add1) #f)
+  (check-equal? (some~>> #f add1) #f)
+  (check-equal? (some~> 1 ((lambda _ #f)) add1) #f)
+  (check-equal? (some~>> 1 ((lambda _ #f)) add1) #f))
+
+;; Confirm expansion using default #%app
+(module+ test
+  (module test-plain-app racket/base
     (require rackunit)
     (require (submod ".." "..")) ;; for ~>
-    (check-equal? (~> 1 (+ 1) (* 2) (+ 1))
-                  5)
-    (let ([d (hasheq 'a 42)])
-      ;; these should NOT work without custom #%app
-      (check-exn exn:fail? (lambda () (d 'a)))
-      (check-exn exn:fail? (lambda () (~> 'a d)))
-      (check-exn exn:fail? (lambda () ('a d)))
-      (check-exn exn:fail? (lambda () (~> d 'a)))))
-  (require 'plain)
-  ;; Confirm expansion using applicative dict #%app
-  (module dict racket/base
+    (require "check-expansion.rkt")
+    (define-namespace-anchor a)
+    ;; 1. Directly; expanding ~> macro
+    (check-expand-fully a
+                        #'(~> 1 +)
+                        #'(#%app + (quote 1)))
+    ;; 2. Indirectly; no implicit require of wrong #%app
+    (check-expand-fully a
+                        #'((hasheq 'a 42) 'a)
+                        #'(#%app (#%app hasheq (quote a) (quote 42))
+                                 (quote a))))
+  (require 'test-plain-app))
+
+;; Confirm expansion using our applicative dict #%app
+(module+ test
+  (module test-dict-app racket/base
     (require rackunit)
     (require (submod ".." "..")) ;; for ~>
     (require (rename-in "app.rkt" [-#%app #%app]))
-    (check-equal? (~> 1 (+ 1) (* 2) (+ 1))
-                  5)
-    ;; these SHOULD work with custom #%app
-    (let ([d (hasheq 'a 42)])
-      (check-equal? (d 'a) 42)
-      (check-equal? (~> 'a d) 42)
-      (check-equal? ('a d) 42)
-      (check-equal? (~> d 'a) 42))
-    ;; Nested using ~> (threading macro)
-    (check-equal? (~> (hasheq 'a (hasheq 'b (hasheq 'c 42)))
-                      'a 'b 'c)
-                  42))
-  (require 'dict)
-  ;; Confirm still works with syntax forms as well as function #%app.
-  (check-true (~> #t (if #t #f)))
-  
-  (check-equal? (some~> 1 (/ 2)) 1/2)
-  
-  (check-equal? (some~>> 1 (/ 2)) 2)
-  
-  (check-equal? (some~> #f add1) #f)
-  
-  (check-equal? (some~>> #f add1) #f)
-  
-  (check-equal? (some~> 1 ((lambda _ #f)) add1) #f)
-  
-  (check-equal? (some~>> 1 ((lambda _ #f)) add1) #f))
+    (require "check-expansion.rkt")
+    (define-namespace-anchor a)
+    ;; 1. Directly; expanding ~> macro
+    (check-expand-fully a
+                        #'(~> 1 +)
+                        #'(#%app maybe-dict-ref + (quote 1)))
+    ;; 2. Indirectly; no implicit require of wrong #%app
+    (check-expand-fully a
+                        #'((hasheq 'a 42) 'a)
+                        #'(#%app maybe-dict-ref
+                                 (#%app maybe-dict-set
+                                        hasheq (quote a) (quote 42)) (quote a))))
+  (require 'test-dict-app))
