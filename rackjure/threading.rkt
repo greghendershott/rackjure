@@ -6,7 +6,8 @@
 (require (only-in "conditionals.rkt" if-let))
 
 (module+ test
-  (require rackunit racket))
+  (require "check-expansion.rkt")
+  (define-namespace-anchor anchor))
 
 ;; Clojure threading macros. Original versions courtesy of Asumu
 ;; Takikawa.
@@ -43,33 +44,23 @@
                                         #'(rest ...)))
        (foldl (keep-stxctx threader) #'first normalized-rest)])))
 
+(module+ test
+  (define-syntax test-threader
+    (threading-syntax-parser
+     (lambda (form nested-form) #`(#,form . #,nested-form))))
+   
+  (check-expand-once anchor #'(test-threader 1) #'1)
+  (check-expand-once anchor #'(test-threader 1 f (g 2)) #'((g 2) (f) . 1)))
+
 (define-syntax ~>
   (threading-syntax-parser
    (lambda (form nested-form)
      (syntax-parse form [(f r ...) #`(f #,nested-form r ...)]))))
 
-(module+ test
-  (check-equal? (~> 1 (+ 1) (* 2) (+ 1)) 5)
-  (check-equal? (~> "a b c d"
-                    string-upcase
-                    (string-replace "A" "X")
-                    (string-split " ")
-                    car)
-                "X")
-  ;; Confirm still works with syntax forms as well as function #%app.
-  (check-true (~> #t (if #t #f)))
-  (require racket/match)
-  (check-true (~> #t (match [#t #t][_ #f]))))
-
 (define-syntax ~>>
   (threading-syntax-parser
    (lambda (form nested-form)
      (syntax-parse form [(f r ...) #`(f r ... #,nested-form)]))))
-
-(module+ test
-  (check-equal? (~>> 5 (+ 3) (/ 2) (- 1)) (/ 3 4))
-  (check-equal? (~>> 1 add1) 2)
-  (check-equal? (~>> 1 + (~>> 1 +)) 2)) ;example from  CLJ-1121
 
 (define-syntax some~>
   (threading-syntax-parser
@@ -82,26 +73,34 @@
      #`(if-let [tmp #,nested-form] (~>> tmp #,form) #f))))
 
 (module+ test
-  (check-equal? (some~> 1 (/ 2)) 1/2)
-  (check-equal? (some~>> 1 (/ 2)) 2)
-  (check-equal? (some~> #f add1) #f)
-  (check-equal? (some~>> #f add1) #f)
-  (check-equal? (some~> 1 ((lambda _ #f)) add1) #f)
-  (check-equal? (some~>> 1 ((lambda _ #f)) add1) #f))
+  (check-expand-once anchor #'(~> 1 (f 2))     #'(f 1 2))
+  (check-expand-once anchor #'(~> #t (if 1 2)) #'(if #t 1 2))
+  ;; ^ Check that it works with syntax forms
+  
+  (check-expand-once  anchor #'(~>> 1 (f 2))       #'(f 2 1))
+  (check-expand-fully anchor #'(~>> 1 + (~>> 1 +)) #'(#%app + '1 (#%app + '1)))
+  ;; ^ Example from CLJ-1121
+  
+  (check-expand-once anchor
+                     #'(some~> 1 f)
+                     #'(if-let [tmp 1](~> tmp (f)) #f))
+  
+  (check-expand-once anchor
+                     #'(some~>> 1 f)
+                     #'(if-let [tmp 1](~>> tmp (f)) #f)))
 
 ;; Confirm expansion using default #%app
 (module+ test
   (module test-plain-app racket/base
-    (require rackunit)
     (require (submod ".." "..")) ;; for ~>
     (require "check-expansion.rkt")
-    (define-namespace-anchor a)
+    (define-namespace-anchor anchor)
     ;; 1. Directly; expanding ~> macro
-    (check-expand-fully a
+    (check-expand-fully anchor
                         #'(~> 1 +)
                         #'(#%app + (quote 1)))
     ;; 2. Indirectly; no implicit require of wrong #%app
-    (check-expand-fully a
+    (check-expand-fully anchor
                         #'((hasheq 'a 42) 'a)
                         #'(#%app (#%app hasheq (quote a) (quote 42))
                                  (quote a))))
@@ -110,17 +109,16 @@
 ;; Confirm expansion using our applicative dict #%app
 (module+ test
   (module test-dict-app racket/base
-    (require rackunit)
     (require (submod ".." "..")) ;; for ~>
     (require (rename-in "app.rkt" [-#%app #%app]))
     (require "check-expansion.rkt")
-    (define-namespace-anchor a)
+    (define-namespace-anchor anchor)
     ;; 1. Directly; expanding ~> macro
-    (check-expand-fully a
+    (check-expand-fully anchor
                         #'(~> 1 +)
                         #'(#%app maybe-dict-ref + (quote 1)))
     ;; 2. Indirectly; no implicit require of wrong #%app
-    (check-expand-fully a
+    (check-expand-fully anchor
                         #'((hasheq 'a 42) 'a)
                         #'(#%app maybe-dict-ref
                                  (#%app maybe-dict-set
