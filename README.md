@@ -9,7 +9,7 @@ Main features:
 
 - [Threading macros `~>` and `~>>`](#threading-macros--and-)
 - [Threading macros `some~>` and `some~>>`](#threading-macros-some-and-some)
-- [Applicable dictionaries](#applicable-dict)
+- [Applicable dictionaries](#applicable-dicts)
 - [Using `{` ... `}` to initialize dictionaries](#dict-initialization-using--)
 - [`str`](#str)
 - [`if-let` and `when-let`](#if-let-and-when-let)
