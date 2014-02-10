@@ -7,13 +7,13 @@ Clojure conflict, prefer Racket.
 
 Main features:
 
-- [Threading macros `~>` and `~>>`](#thread).
-- [Threading macros `some~>` and `some~>>`](#some-thread).
-- [Applicable dictionaries](#applicable-dicts).
-- [Using `{` ... `}` to initialize dictionaries](#curly).
+- [Threading macros `~>` and `~>>`](#threading-macros--and-)
+- [Threading macros `some~>` and `some~>>`](#threading-macros-some-and-some)
+- [Applicable dictionaries](#applicable-dict)
+- [Using `{` ... `}` to initialize dictionaries](#dict-initialization-using--)
 - [`str`](#str)
-- [`if-let` and `when-let](#if-let)
-- [`if-not` and `when-not`](#if-not)
+- [`if-let` and `when-let`](#if-let-and-when-let)
+- [`if-not` and `when-not`](#if-not-and-when-not)
 - [`partial`](#partial)
 - [`egal?`](#egal)
 - [`box-swap!`](#box-swap)
@@ -54,7 +54,7 @@ raco link rackjure
 raco setup rackjure
 ```
 
-<h2 id="thread">"Threading" macros <code>~&gt;</code> and <code>~&gt;&gt;</code></h2>
+## "Threading" macros `~>` and `~>>`
 
 The "threading" macros let you thread values through a series of
 applications in data-flow order. This can be a really refreshing way
@@ -117,12 +117,11 @@ specified this way. As a result, `~>` can also be used as a kind of
 The `~>>` macro "threads" values through a series of function
 applications as the _last_ argument to each one.
 
-<h2 id="some-thread">"Threading" macros <code>some~&gt;</code> and <code>some~&gt;&gt;</ccode></h2>
+## "Threading" macros `some~>` and `some~>>`
 
-Analogous to `some->` and `some->>` in Clojure, i.e. stop threading at
-a `#f` value.
+Analogous to `some->` and `some->>` in Clojure, i.e. stop threading at a `#f` value.
 
-<h2 id="applicable-dicts">Applicable <code>dict</code></h2>
+## Applicable `dict`s
 
 `#lang rackjure` redefines `#%app` to make applications work
 differently when a `dict` is in the first position:
@@ -201,7 +200,7 @@ needs to store #f as values in a dict, and such code can use the
 `#:else` keyword.
 
 
-<h2 id="curly">Dict initialization using <code>{ }</code></h2>
+## Dict initialization using `{ }`
 
 Write `((k0 . v0)(k1 . v1) ...)` as `{k0 v0 k1 v1 ...}`.
 
@@ -217,7 +216,7 @@ The `current-curly-dict` parameter says what this expands to. It
 defaults to `alist`, but may be set to `hash`, `hasheq` or anything
 with a `(f k0 v0 k1 v1 ... ...)` signature.
 
-<h2 id="str"><code>str</code></h2>
+## `str`
 
 `str` can be a succinct alternative to `string-append` or `format`.
 
@@ -253,10 +252,9 @@ Examples:
 (str #:fmt ~v  #:sep " " "Yo" "Yo") => "\"Yo\" \"Yo\""
 ```
 
-<h2 id="if-let"><code>if-let</code> and <code>when-let</code></h2>
+## `if-let` and `when-let`
 
-Handy conditionals that (as you might have guessed) combine
-`if`/`when` with `let`.
+Handy conditionals that (as you might have guessed) combine `if`/`when` with `let`.
 
 Examples:
 
@@ -272,17 +270,16 @@ Examples:
   (displayln (str "foo was set to " foo)))
 ```
 
-<h2> id="if-not"><code>if-not</code> and <code>when-not</code></h2>
+## `if-not` and `when-not`
 
-Handy shortcuts for `(if (not test) then else)` and `(when (not test)
-body ...+)`.
+Handy shortcuts for `(if (not test) then else)` and `(when (not test) body ...+)`.
 
-<h2 id="partial"><code>partial</code></h2>
+## `partial`
 
 Function for partial application. `((partial + 1) 2)` <=> `(+ 1 2)`.
 Differs from `curry` in that it doesn't care about function arity.
 
-<h2 id="egal"><code>egal?</code></h2>
+## `egal?`
 
 An implementation of `egal?` as described in
 [_Equal Rights for Functional Objects_]. An alternative to `equal?`
@@ -330,7 +327,7 @@ For two `struct`s to be `egal?`, all of the following must be true:
 4. The structure type must not be `#:mutable`, nor must any of the
    individual fields be `#:mutable`.
 
-<h2 id="box-swap"><code>box-swap!</code></h2>
+## `box-swap!`
 
 Like `swap!` in Clojure, but for [boxes]. Requires Racket 5.92+.
 
