@@ -4,11 +4,12 @@ env:
  - RACKET_VERSION=5.3.2
  - RACKET_VERSION=5.3.5
  - RACKET_VERSION=5.3.6
- - RACKET_VERSION=5.92
+ - RACKET_VERSION=6.0
  - RACKET_VERSION=HEAD
 
 before_install:
- - curl https://raw.github.com/greghendershott/travis-racket/master/install-racket.sh | sh
+# Note: Important to pipe this to `bash` not to `sh`.
+- curl -L https://github.com/greghendershott/travis-racket/releases/download/v0.5/install-racket.sh | bash
 
 install:
 
