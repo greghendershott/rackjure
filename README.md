@@ -350,7 +350,7 @@ or in Racket
     (λ (% %2) (+ % %2))
     (lambda (% %2) (+ % %2))
 
-`%1` through `%9` are positional arguments, `%` is a synonym for `%`,
+`%1` through `%9` are positional arguments, `%` is a synonym for `%1`,
 and `%&` is a rest argument.
 
 The Racket reader already uses `#( .... )` for vector literals.
