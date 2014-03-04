@@ -17,6 +17,7 @@ Main features:
 - [`partial`](#partial)
 - [`egal?`](#egal)
 - [`box-swap!`](#box-swap)
+- [`Reader function literals`](#reader-function-literals)
 
 > **NOTE**: This is tested on recent versions of Racket. If you find an issue using a Racket version older than 5.3.2, and for some reason you can't upgrade, please [report here](https://github.com/greghendershott/rackjure/issues) and I'll try to fix if possible.
 
@@ -332,3 +333,37 @@ For two `struct`s to be `egal?`, all of the following must be true:
 Like `swap!` in Clojure, but for [boxes]. Requires Racket 5.92+.
 
 [boxes]: http://docs.racket-lang.org/reference/boxes.html
+
+## Reader function literals
+
+The Clojure reader lets you succinctly define anonymous function
+literals. For example
+
+    #(+ % %2)
+
+is equivalent to
+
+    (fn [% %2] (+ % %2))
+
+or in Racket
+
+    (λ (% %2) (+ % %2))
+    (lambda (% %2) (+ % %2))
+
+`%1` through `%9` are positional arguments, `%` is a synonym for `%`,
+and `%&` is a rest argument.
+
+The Racket reader already uses `#( .... )` for vector literals.
+Therefore Rackjure instead uses your choice of `#fn( .... )`,
+`#λ( .... )`, or `#lambda( .... )`.
+
+Examples:
+
+```racket
+(map #fn(+ % 1) '(1 2 3)) ;=> '(2 3 4)
+(map #fn(+ % %2) '(1 2 3) '(1 2 3)) ;=> '(2 4 6)
+(#fn(apply list* % %&) 1 '(2 3)) ;=> '(1 2 3)
+```
+
+> **NOTE**: Although the Clojure docs imply that `%10` and greater are
+> supported, Rackjure doesn't.

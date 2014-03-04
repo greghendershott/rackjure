@@ -1,6 +1,6 @@
 #lang rackjure
 
-;; Tests of #%app (not convenient to put in app.rkt).
+;;; Tests of #%app (not convenient to put in app.rkt).
 
 (module+ test
   (require rackunit)
@@ -69,3 +69,31 @@
              (thunk (eval #'(module m rackjure
                               {0 1 2})))
              "expected even number of items for dictionary"))
+
+;;; Tests of lambda reader macro not convenient to put in lambda-reader.rkt
+
+(module+ test
+  ;; Using #λ( ... )
+  (check-equal? (map #λ(+ % 1) '(1 2 3))
+                '(2 3 4))
+  (check-equal? (map #λ(+ % %2) '(1 2 3) '(1 2 3))
+                '(2 4 6))
+  (check-equal? (#λ(apply list* % %&) 1 '(2 3))
+                '(1 2 3))
+  ;; Using #lambda( ... )
+  (check-equal? (map #lambda(+ % 1) '(1 2 3))
+                '(2 3 4))
+  (check-equal? (map #lambda(+ % %2) '(1 2 3) '(1 2 3))
+                '(2 4 6))
+  (check-equal? (#lambda(apply list* % %&) 1 '(2 3))
+                '(1 2 3))
+  ;; Using #fn( ... )
+  (check-equal? (map #fn(+ % 1) '(1 2 3))
+                '(2 3 4))
+  (check-equal? (map #fn(+ % %2) '(1 2 3) '(1 2 3))
+                '(2 4 6))
+  (check-equal? (#fn(apply list* % %&) 1 '(2 3))
+                '(1 2 3))
+  ;; #fn doesn't interfere with #f
+  (check-equal? #f #f)
+  (check-false #f))
