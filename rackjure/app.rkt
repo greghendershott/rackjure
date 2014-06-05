@@ -69,18 +69,15 @@
 (define current-curly-dict (make-parameter alist))
 
 (define-syntax (-#%app stx)
-  (define-splicing-syntax-class key-value-pair
-    (pattern (~seq k:expr v:expr)
-             #:attr pair #'(k v)))
   (syntax-parse stx
     ;; { ... } dict literals
-    [(_ kv:expr ...) #:when (eq? (syntax-property stx 'paren-shape) #\{)
-     (unless (zero? (remainder (length (syntax->list #'(kv ...))) 2))
+    [(_ x:expr ...) #:when (eq? (syntax-property stx 'paren-shape) #\{)
+     (unless (zero? (remainder (length (syntax->list #'(x ...))) 2))
        (raise-syntax-error '|{ }|
                            "expected even number of items for dictionary"
                            (datum->syntax #f (cdr (syntax->list stx)) stx stx)
-                           (last (syntax->list #'(kv ...)))))
-     #'((current-curly-dict) kv ...)]
+                           (last (syntax->list #'(x ...)))))
+     #'((current-curly-dict) x ...)]
     ;; Arities that might be dict applications
     [(_ x:expr y:expr)               #'(maybe-dict-ref x y)]
     [(_ x:expr y:expr #:else d:expr) #'(maybe-dict-ref/else x y #:else d)]
