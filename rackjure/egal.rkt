@@ -106,14 +106,14 @@
   (≠ "a" "b")
   (≠ (string #\a) (string #\a))
   (= (string->immutable-string (string #\a))
-      (string->immutable-string (string #\a)))
+     (string->immutable-string (string #\a)))
 
   ;; Although #"bytes" literals are immutable, `bytes` isn't
   (= #"a" #"a")
   (≠ #"a" #"b")
   (≠ (bytes 0) (bytes 0))
   (= (bytes->immutable-bytes (bytes 0))
-      (bytes->immutable-bytes (bytes 0)))
+     (bytes->immutable-bytes (bytes 0)))
 
   ;; Although #(0) literals are immutable (as is obviously
   ;; `vector-immutable`), `vector` isn't.
