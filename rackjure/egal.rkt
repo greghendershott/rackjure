@@ -171,14 +171,16 @@
   (define m (mutable 0))
   (check-false (immutable-struct? m))
 
-  (struct mutable:immutable mutable (fld2) #:transparent)
-  (define m:i (mutable:immutable 0 1))
-  (check-false (immutable-struct? m:i))
-
   (struct immutable (fld) #:transparent)
   (define i (immutable 0))
   (check-true (immutable-struct? i))
 
+  ;; An immutable struct derived from a mutable struct: Nope.
+  (struct mutable:immutable mutable (fld2) #:transparent)
+  (define m:i (mutable:immutable 0 1))
+  (check-false (immutable-struct? m:i))
+
+  ;; An immutable struct derived from an immutable struct: Yes.
   (struct immutable:immutable immutable (fld2) #:transparent)
   (define i:i (immutable:immutable 0 1))
   (check-true (immutable-struct? i:i)))
