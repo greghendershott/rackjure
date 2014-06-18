@@ -21,6 +21,8 @@
 Provide a few Clojure-inspired ideas in Racket. Where Racket and
 Clojure conflict, prefer Racket.
 
+@hyperlink["https://github.com/greghendershott/rackjure" "Source"].
+
 @margin-note{This is tested on recent versions of Racket. If you find an issue using a Racket version older than 5.3.2, and for some reason you can't upgrade, please @hyperlink["https://github.com/greghendershott/rackjure/issues" "report here"] and I'll try to fix if possible.}
 
 @[table-of-contents]
