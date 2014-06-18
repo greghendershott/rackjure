@@ -300,6 +300,17 @@ Defaults to @racket[alist]. May be set to @racket[hash],
 @racket[hasheq] or anything with the same @racket[(f k v ... ...)]
 signature.
 
+Examples:
+
+@codeblock{
+> (parameterize ([current-curly-dict alist])
+    {'k0 0 'k1 1})
+'((k0 . 0) (k1 . 1))
+> (parameterize ([current-curly-dict hasheq])
+    {'k0 0 'k1 1})
+'#hasheq((k0 . 0) (k1 . 1))
+}
+
 }
 
 @defmodule[rackjure/alist]
@@ -307,6 +318,10 @@ signature.
 @defproc[(alist [key any/c] [val any/c] ... ...) (listof (cons any/c any/c))]{
 
 Creates an association list.
+
+@examples[#:eval EVAL
+(alist 'k0 0 'k1 1 'k2 2)
+]
 
 }
 
@@ -318,7 +333,7 @@ Creates an association list.
 @defproc[(str
 [expression any/c] ...
 [#:fmt fmt ~a]
-[#:sep sep " "]
+[#:sep sep ""]
 ) string?]{
 
 @racket[str] can be a succinct alternative to @racket[string-append]
@@ -335,8 +350,9 @@ Also, it returns an immutable string (created via
 (str #f)
 (str "Yo" "Yo")
 (str "Yo" "Yo" "Ma")
-(str '(0 1 2 3 4 5 6 7 8 9))
-(apply str '(0 1 2 3 4 5 6 7 8 9))
+(apply str '(0 1 2 3))
+(str 0 1 2 3)
+(str '(0 1 2 3))
 ]
 
 Our version adds optional keyword arguments, the defaults of which
