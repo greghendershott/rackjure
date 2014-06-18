@@ -1,6 +1,8 @@
 #lang scribble/manual
 
-@(require (for-label rackjure/alist
+@(require racket/sandbox
+          scribble/eval
+          (for-label rackjure/alist
                      rackjure/conditionals
                      rackjure/dict
                      rackjure/egal
@@ -8,6 +10,11 @@
                      rackjure/threading
                      rackjure/utils
                      racket))
+
+@(define EVAL
+   (parameterize ([sandbox-output 'string]
+                  [sandbox-error-output 'string])
+     (make-evaluator 'rackjure)))
 
 @title{#lang rackjure}
 
@@ -34,7 +41,7 @@ is more "thready".
 As another example, the @tt{{}} dictionary literals let you use anything
 for a key, not just Clojure map @tt{:keyword}s.
 
-When it must choose, `#lang rackjure` chooses to be more Rackety.
+When it must choose, @tt{#lang rackjure} chooses to be more Rackety.
 
 @;--------------------------------------------------------------------
 
@@ -228,7 +235,7 @@ Note that dictionary keys are not required to be Clojure style
 
 @margin-note{This application syntax doesn't work for a @racket[dict?]
 that stores @racket[procedure?] as keys or values. The reason is that
-`#lang rackjure` must provide its own @racket[#%app]. The only
+@tt{#lang rackjure} must provide its own @racket[#%app]. The only
 way (AFAIK) it can distinguish a normal function application from a
 dictionary application is to check for @racket[procedure?] in the
 first position. As a result, in those cases you'll have to use
@@ -320,33 +327,36 @@ and/or @racket[format].
 Also, it returns an immutable string (created via
 @racket[string->immutable-string]).
 
-Examples:
 
-@racketblock[
-(str)      => ""
-(str "hi") => "hi"
-(str 1)    => "1"
-(str #f)   => "#f"
-(str "Yo" "Yo")      => "YoYo"
-(str "Yo" "Yo" "Ma") => "YoYoMa"
-(str '(0 1 2 3 4 5 6 7 8 9))        => "(0 1 2 3 4 5 6 7 8 9)"
-(apply str '(0 1 2 3 4 5 6 7 8 9))  => "0123456789"
+@examples[#:eval EVAL
+(str)
+(str "hi")
+(str 1)
+(str #f)
+(str "Yo" "Yo")
+(str "Yo" "Yo" "Ma")
+(str '(0 1 2 3 4 5 6 7 8 9))
+(apply str '(0 1 2 3 4 5 6 7 8 9))
 ]
 
 Our version adds optional keyword arguments, the defaults of which
 behave like Clojure's @tt{str}:
 
-- `#:fmt`: The function to apply to each argument. Defaults to
-           `~a`. May be any `(any/c -> string?)` function, e.g. `~v`.
+@itemize[
 
-- `#:sep`: A `string?` to add between each. Defaults to `""`.
+@item{@racket[#:fmt]: The function to apply to each argument. Defaults
+to @racket[~a]. May be any @racket[(any/c . -> . string?)] function,
+e.g. @racket[~v].}
 
-Examples:
+@item{@racket[#:sep]: A @racket[string?] to add between each. Defaults
+to @racket[""].}
 
-@racketblock[
-(str #:fmt ~v "Yo" "Yo")            => "\"Yo\"\"Yo\""
-(str #:sep " " "Yo" "Yo")           => "Yo Yo"
-(str #:fmt ~v  #:sep " " "Yo" "Yo") => "\"Yo\" \"Yo\""
+]
+
+@examples[#:eval EVAL
+(str #:fmt ~v "Yo" "Yo")
+(str #:sep " " "Yo" "Yo")
+(str #:fmt ~v  #:sep " " "Yo" "Yo")
 ]
 
 }
@@ -367,16 +377,6 @@ Combines @racket[if] and @racket[let]:
       else-expr))
 ]
 
-Example:
-
-@racketblock[
-(define dict {'foo 5})
-
-(if-let [foo ('foo dict)]
-  (add1 foo)
-  'foo-not-found) => 6
-]
-
 }
 
 @defform[(when-let [identifier test-expr] body ...+)]{
@@ -387,16 +387,6 @@ Combines @racket[when] with @racket[let]:
 (let ([identifier test-expr])
   (when identifier
     body ...))
-]
-
-Example:
-
-@racketblock[
-(define dict {'foo 5})
-
-(when-let [foo {'foo dict}]
-  (displayln "OK... *drumroll*")
-  (displayln (str "foo was set to " foo)))
 ]
 
 }
@@ -446,25 +436,27 @@ mutability.
 
 In general, two things that are @racket[equal?] will also be
 @racket[egal?] only if they are both immutable. Some things in Racket
-aren't immutable by default. For example, although @racket["string
-constants"] are immutable, strings returned by @racket[string] or
-@racket[string-join] are not, unless you also run them through
-@racket[string->immutable-string]. Same with @racket[bytes]. Many
-things come in both mutable and immutable variants, such as hashes and
-vectors.
+aren't immutable by default. For example, although
+@racket["string-constants"] are immutable, strings returned by
+@racket[string] or @racket[string-join] are mutable, unless you also
+run them through @racket[string->immutable-string]. Same with
+@racket[bytes]. Other things come in both mutable and immutable
+variants, such as hashes and vectors.
 
 For more details, see
 @hyperlink["https://github.com/greghendershott/rackjure/blob/master/rackjure/egal.rkt" "egal.rkt"]
 for the implementation and test cases. A few examples:
 
 @#reader scribble/comment-reader
-(racketblock
-;; Although "string" literals are immutable, `string` isn't
-(egal? "a" "b") ; #f
-(egal? "a" "a") ; #t
-(egal? (string #\a) (string #\a)) ; #f (because neither is immutable)
+(examples #:eval EVAL
+(require rackjure/egal)
+;; Although "string" literals are immutable...
+(egal? "a" "a")
+;; @racket[string] is mutable...
+(egal? (string #\a) (string #\a))
+;; Immutable strings are (you guessed it) immutable...
 (egal? (string->immutable-string (string #\a))
-       (string->immutable-string (string #\a))) ; #t (b/c both are immutable)
+       (string->immutable-string (string #\a)))
 )
 
 @subsection{@racket[egal?] and @racket[struct]s}
@@ -510,6 +502,18 @@ it doesn't care about function arity.
 
 Like @tt{swap!} in Clojure, but for @racket[box?].
 
+Essentially it is:
+
+@racketblock[
+(define (box-swap! box f . args)
+  (let loop ()
+    (let* ([old (unbox box)]
+           [new (apply f old args)])
+      (if (box-cas! box old new)
+          new
+          (loop)))))
+]
+
 @margin-note{This is implemented using @racket[box-cas!] introduced in
 Racket 5.92. On older versions of Racket, calling @racket[box-swap!]
 raises an error.}
@@ -526,24 +530,27 @@ literals. For example
     #(+ % %2)
 }
 
-is equivalent to
+is equivalent to this in Clojure
 
 @codeblock{
     (fn [% %2] (+ % %2))
 }
 
-or in Racket
+which would be in Racket
 
 @racketblock[
     (λ (% %2) (+ % %2))
     (lambda (% %2) (+ % %2))
 ]
 
-@tt{%1} through @tt{%9} are positional arguments, @tt{%} is a synonym
-for @tt{%1}, and @tt{%&} is a rest argument.
+@itemize[
+@item{@tt{%1} through @tt{%9} are positional arguments}
+@item{@tt{%} is a synonym for @tt{%1}}
+@item{@tt{%&} is a rest argument}
+]
 
 @margin-note{Although the Clojure docs imply that @tt{%10} and greater
-are supported, Rackjure doesn't.}
+are supported, Rackjure does not.}
 
 The Racket reader already uses @tt{#(  )} for vector literals.
 Therefore Rackjure instead uses your choice of @tt{#fn(  )},
