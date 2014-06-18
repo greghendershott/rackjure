@@ -40,5 +40,5 @@ publish: htmldocs pages
 	cp -r htmldocs/. pages/.
 	(cd pages; git add -A)
 	-(cd pages; git commit -m "Update $$(date +%Y%m%d%H%M%S)")
-	(cd pages; git push)
+	(cd pages; git push origin gh-pages)
 	rm -rf pages
