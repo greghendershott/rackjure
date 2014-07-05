@@ -4,7 +4,9 @@
          racket/match
          (only-in racket/port input-port-append)
          (only-in racket/list filter-map remove-duplicates append*)
-         rackjure/threading)
+         rackjure/threading
+         (for-syntax racket/base)
+         )
 
 (provide wrapper1
          lambda-readtable)
