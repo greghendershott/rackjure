@@ -3,7 +3,7 @@
 (require syntax/parse
          racket/match
          (only-in racket/port input-port-append)
-         (only-in racket/list filter-map remove-duplicates)
+         (only-in racket/list filter-map remove-duplicates append*)
          rackjure/threading)
 
 (provide wrapper1
