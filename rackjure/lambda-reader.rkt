@@ -10,13 +10,22 @@
 (provide wrapper1
          lambda-readtable)
 
-;; parse
+(define (parse stx)
+  (with-syntax ([args (parse-args stx)]
+                [%1 (datum->syntax stx '%1 stx)]
+                [body stx])
+    #'(lambda args
+        (define-syntax % (make-rename-transformer #'%1))
+        body)))
+
 (module+ test
   (require rackunit)
   ;; These test `parse`. See test.rkt for tests of readtable use per se.
   (define chk (compose1 syntax->datum parse))
   (check-equal? (chk #'(+))
-                '(lambda () (+)))
+                '(lambda ()
+                  (define-syntax % (make-rename-transformer #'%1))
+                  (+)))
   (check-equal? (chk #'(+ 2 %1 %1))
                 '(lambda (%1)
                   (define-syntax % (make-rename-transformer #'%1))
@@ -30,19 +39,6 @@
                   (define-syntax % (make-rename-transformer #'%1))
                   (apply list* % %&))))
 
-(define (parse stx)
-  (with-syntax ([args (parse-args stx)]
-                [% (datum->syntax stx '% stx)]
-                [%1 (datum->syntax stx '%1 stx)]
-                [body stx])
-    (cond [(pair? (syntax-e #'args))
-           #'(lambda args
-               (define-syntax % (make-rename-transformer #'%1))
-               body)]
-          [else
-           #'(lambda args
-               body)])))
-  
 ;; parse-args : Stx -> KW-Formals-Stx
 (define (parse-args stx)
   ;; Filter the stxs to those that start with %, 
