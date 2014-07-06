@@ -64,8 +64,6 @@
 ;; find-max-num+rest : Stx -> (Values Natural Boolean (Listof Keyword))
 (define (find-max-num+rest?+kws stx)
   (define stx.e (maybe-syntax-e stx))
-  (define (return #:max-num [max-num 0] #:rest? [rest? #f] #:kws [kws '()])
-    (values max-num rest? kws))
   (cond [(symbol? stx.e) (find-max-num?+rest?+kws--sym stx.e)]
         [(pair? stx.e) (find-max-num+rest?+kws--pair stx.e)]
         [else (return)]))
@@ -73,8 +71,6 @@
 (define (find-max-num?+rest?+kws--sym sym)
   (define str (symbol->string sym))
   (define str.length (string-length str))
-  (define (return #:max-num [max-num 0] #:rest? [rest? #f] #:kws [kws '()])
-    (values max-num rest? kws))
   (cond [(zero? str.length) (return)]
         [else
          (define str.fst (string-ref str 0))
@@ -90,8 +86,6 @@
                [else (return)])]))
 
 (define (find-max-num+rest?+kws--pair pair)
-  (define (return #:max-num [max-num 0] #:rest? [rest? #f] #:kws [kws '()])
-    (values max-num rest? kws))
   (define-values (car.max-num car.rest? car.kws)
     (find-max-num+rest?+kws (car pair)))
   (define-values (cdr.max-num cdr.rest? cdr.kws)
@@ -99,6 +93,9 @@
   (return #:max-num (max car.max-num cdr.max-num)
           #:rest? (or car.rest? cdr.rest?)
           #:kws (remove-duplicates (append car.kws cdr.kws))))
+
+(define (return #:max-num [max-num 0] #:rest? [rest? #f] #:kws [kws '()])
+  (values max-num rest? kws))
 
 (define (maybe-syntax-e stx)
   (cond [(syntax? stx) (syntax-e stx)]
