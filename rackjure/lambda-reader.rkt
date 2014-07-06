@@ -5,8 +5,7 @@
          (only-in racket/port input-port-append)
          (only-in racket/list filter-map remove-duplicates append*)
          rackjure/threading
-         (for-syntax racket/base)
-         )
+         (for-syntax racket/base))
 
 (provide wrapper1
          lambda-readtable)
@@ -19,11 +18,17 @@
   (check-equal? (chk #'(+))
                 '(lambda () (+)))
   (check-equal? (chk #'(+ 2 %1 %1))
-                '(lambda (%1) (define-syntax % (make-rename-transformer #'%1)) (+ 2 %1 %1)))
+                '(lambda (%1)
+                  (define-syntax % (make-rename-transformer #'%1))
+                  (+ 2 %1 %1)))
   (check-equal? (chk #'(+ 2 %3 %2 %1))
-                '(lambda (%1 %2 %3) (define-syntax % (make-rename-transformer #'%1)) (+ 2 %3 %2 %1)))
+                '(lambda (%1 %2 %3)
+                  (define-syntax % (make-rename-transformer #'%1))
+                  (+ 2 %3 %2 %1)))
   (check-equal? (chk #'(apply list* % %&))
-                '(lambda (%1 . %&) (define-syntax % (make-rename-transformer #'%1)) (apply list* % %&))))
+                '(lambda (%1 . %&)
+                  (define-syntax % (make-rename-transformer #'%1))
+                  (apply list* % %&))))
 
 (define (parse stx)
   (with-syntax ([args (parse-args stx)]
@@ -71,16 +76,18 @@
   (define (return #:max-num [max-num 0] #:rest? [rest? #f] #:kws [kws '()])
     (values max-num rest? kws))
   (cond [(zero? str.length) (return)]
-        [else (define str.fst (string-ref str 0))
-              (cond [(char=? str.fst #\%) (define str.rst (substring str 1))
-                                          (cond [(equal? str.rst "") (return #:max-num 1)]
-                                                [(equal? str.rst "&") (return #:rest? #t)]
-                                                [else (define n (string->number str.rst))
-                                                      (cond [n (return #:max-num n)]
-                                                            [(equal? "#:" (substring str.rst 0 2))
-                                                             (return #:kws (list (string->keyword (substring str.rst 2))))]
-                                                            [else (return)])])]
-                    [else (return)])]))
+        [else
+         (define str.fst (string-ref str 0))
+         (cond [(char=? str.fst #\%)
+                (define str.rst (substring str 1))
+                (cond [(equal? str.rst "") (return #:max-num 1)]
+                      [(equal? str.rst "&") (return #:rest? #t)]
+                      [else (define n (string->number str.rst))
+                            (cond [n (return #:max-num n)]
+                                  [(equal? "#:" (substring str.rst 0 2))
+                                   (return #:kws (list (string->keyword (substring str.rst 2))))]
+                                  [else (return)])])]
+               [else (return)])]))
 
 (define (find-max-num+rest?+kws--pair pair)
   (define (return #:max-num [max-num 0] #:rest? [rest? #f] #:kws [kws '()])
@@ -92,7 +99,6 @@
   (return #:max-num (max car.max-num cdr.max-num)
           #:rest? (or car.rest? cdr.rest?)
           #:kws (remove-duplicates (append car.kws cdr.kws))))
-
 
 (define (maybe-syntax-e stx)
   (cond [(syntax? stx) (syntax-e stx)]
