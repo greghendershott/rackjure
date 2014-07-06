@@ -63,27 +63,22 @@
 
 ;; find-max-num+rest : Stx -> (Values Natural Boolean (Listof Keyword))
 (define (find-max-num+rest?+kws stx)
-  (define stx.e (maybe-syntax-e stx))
-  (cond [(symbol? stx.e) (find-max-num?+rest?+kws--sym stx.e)]
-        [(pair? stx.e) (find-max-num+rest?+kws--pair stx.e)]
-        [else (return)]))
+  (match (maybe-syntax-e stx)
+    [(? symbol? sym) (find-max-num?+rest?+kws--sym sym)]
+    [(? pair? pair)  (find-max-num+rest?+kws--pair pair)]
+    [_               (return)]))
 
 (define (find-max-num?+rest?+kws--sym sym)
-  (define str (symbol->string sym))
-  (define str.length (string-length str))
-  (cond [(zero? str.length) (return)]
-        [else
-         (define str.fst (string-ref str 0))
-         (cond [(char=? str.fst #\%)
-                (define str.rst (substring str 1))
-                (cond [(equal? str.rst "") (return #:max-num 1)]
-                      [(equal? str.rst "&") (return #:rest? #t)]
-                      [else (define n (string->number str.rst))
-                            (cond [n (return #:max-num n)]
-                                  [(equal? "#:" (substring str.rst 0 2))
-                                   (return #:kws (list (string->keyword (substring str.rst 2))))]
-                                  [else (return)])])]
-               [else (return)])]))
+  (match (~> sym symbol->string string->list)
+    [(list)                 (return)]
+    [(list  #\%)            (return #:max-num 1)]
+    [(list  #\% #\&)        (return #:rest? #t)]
+    [(list* #\% #\# #\: cs) (return #:kws (~> cs list->string string->keyword
+                                              list))]
+    [(list* #\% cs)         (let ([n (~> cs list->string string->number)])
+                              (cond [n    (return #:max-num n)]
+                                    [else (return)]))]
+    [_                      (return)]))
 
 (define (find-max-num+rest?+kws--pair pair)
   (define-values (car.max-num car.rest? car.kws)
