@@ -113,7 +113,7 @@
                           ;even use both at the same time ...
   (check-equal? (#λ(begin (set! % "%") %1) "%1")
                 "%")      ;...and even set!-ing one set!s the other.
-  (check-equal? (#λ%2 "ignored" "%2")
-                "%2")     ;handles skipped arguments
-  (check-equal? (apply #λ%42 (build-list 42 add1))
-                42))      ;handles an arbitrary number of arguments
+  (check-equal? (#λ(begin %2) "ignored" "used")
+                "used")       ;handles skipped arguments
+  (check-equal? (apply #λ(list %1 %42) (build-list 42 add1))
+                (list 1 42))) ;handles an arbitrary number of arguments
