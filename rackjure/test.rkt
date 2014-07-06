@@ -105,14 +105,15 @@
   (check-equal? (#λ(apply list* % %&) 1 '(2 3))
                 '(1 2 3))
   (check-equal? (#λ(* 1/2 %#:m (* %#:v %#:v)) #:m 2 #:v 1)
-                1)        ; keyword-arguments
+                1)        ;keyword-arguments
   (let ([x (#λ"I am x")])
     (check-equal? (#λx) "I am x")) ;the body doesn't have to be in parens
+  (check-equal? (#λ(+ % %1) 2)
+                4)        ;% means exactly the same as %1, and you can
+                          ;even use both at the same time ...
   (check-equal? (#λ(begin (set! % "%") %1) "%1")
-                "%")      ;% means exactly the same as %1, and you can
-                          ;even use both at the same time, and even
-                          ;set!-ing one set!s the other.
+                "%")      ;...and even set!-ing one set!s the other.
   (check-equal? (#λ%2 "ignored" "%2")
                 "%2")     ;handles skipped arguments
   (check-equal? (apply #λ%42 (build-list 42 add1))
-                42))       ;handles an arbitrary number of arguments
+                42))      ;handles an arbitrary number of arguments
