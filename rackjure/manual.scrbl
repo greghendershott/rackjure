@@ -548,13 +548,13 @@ literals. For example
     #(+ % %2)
 }
 
-is equivalent to this in Clojure
+is equivalent to this in Clojure:
 
 @codeblock{
     (fn [% %2] (+ % %2))
 }
 
-which would be in Racket
+or in Racket:
 
 @racketblock[
     (λ (% %2) (+ % %2))
@@ -565,10 +565,8 @@ which would be in Racket
 @item{@tt{%1} through @tt{%9} are positional arguments}
 @item{@tt{%} is a synonym for @tt{%1}}
 @item{@tt{%&} is a rest argument}
+@item{@tt{%#:keyword} is a @racket[#:keyword] argument}
 ]
-
-@margin-note{Although the Clojure docs imply that @tt{%10} and greater
-are supported, Rackjure does not.}
 
 The Racket reader already uses @tt{#(  )} for vector literals.
 Therefore Rackjure instead uses your choice of @tt{#fn(  )},
@@ -579,5 +577,16 @@ Examples:
 @verbatim{
 (map #λ(+ % 1) '(1 2 3)) ;=> '(2 3 4)
 (map #λ(+ % %2) '(1 2 3) '(1 2 3)) ;=> '(2 4 6)
+
+;; Rest argument
 (#λ(apply list* % %&) 1 '(2 3)) ;=> '(1 2 3)
+
+;; Keyword argument
+(#λ(* 1/2 %#:m (* %#:v %#:v)) #:m 2 #:v 1) ;=> 1
+
+;; Ignores unused arguments
+(#λ(begin %2) "ignored" "used") ;=> "used"
+
+;; Handles an arbitary number of arguments
+(apply #λ(list %1 %42) (build-list 42 add1)) ;=> (list 1 42)
 }
