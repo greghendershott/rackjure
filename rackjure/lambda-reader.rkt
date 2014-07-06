@@ -50,7 +50,7 @@
   ;; keyword arguments or a rest argument, and
   ;; produce kw-formals based on that.
   (define-values (max-num rest? kws)
-    (find-max-num+rest?+kws stx))
+    (find-arg-info stx))
   (define datum-kw-formals
     (append (for/list ([n (in-range 1 (add1 max-num))])
               (string->symbol (string-append "%" (number->string n))))
@@ -61,14 +61,15 @@
                   [else '()])))
   (datum->syntax stx datum-kw-formals stx))
 
-;; find-max-num+rest : Stx -> (Values Natural Boolean (Listof Keyword))
-(define (find-max-num+rest?+kws stx)
-  (match (maybe-syntax-e stx)
-    [(? symbol? sym) (find-max-num?+rest?+kws--sym sym)]
-    [(? pair? pair)  (find-max-num+rest?+kws--pair pair)]
+;; find-arg-info : Any -> (Values Natural Boolean (Listof Keyword))
+(define (find-arg-info v)
+  (match (maybe-syntax-e v)
+    [(? symbol? sym) (find-arg-info/sym sym)]
+    [(? pair? pair)  (find-arg-info/pair pair)]
     [_               (return)]))
 
-(define (find-max-num?+rest?+kws--sym sym)
+;; find-arg-info/sym : Symbol -> (Values Natural Boolean (Listof Keyword))
+(define (find-arg-info/sym sym)
   (match (~> sym symbol->string string->list)
     [(list)                 (return)]
     [(list  #\%)            (return #:max-num 1)]
@@ -80,11 +81,13 @@
                                     [else (return)]))]
     [_                      (return)]))
 
-(define (find-max-num+rest?+kws--pair pair)
+;; find-arg-info/pair :
+;;   (Cons Symbol Symbol) -> (Values Natural Boolean (Listof Keyword))
+(define (find-arg-info/pair pair)
   (define-values (car.max-num car.rest? car.kws)
-    (find-max-num+rest?+kws (car pair)))
+    (find-arg-info (car pair)))
   (define-values (cdr.max-num cdr.rest? cdr.kws)
-    (find-max-num+rest?+kws (cdr pair)))
+    (find-arg-info (cdr pair)))
   (return #:max-num (max car.max-num cdr.max-num)
           #:rest? (or car.rest? cdr.rest?)
           #:kws (remove-duplicates (append car.kws cdr.kws))))
