@@ -67,15 +67,14 @@
 ;; find-arg-info/sym : Symbol -> (Values Natural Boolean (Listof Keyword))
 (define (find-arg-info/sym sym)
   (match (~> sym symbol->string string->list)
-    [(list)                 (return)]
-    [(list  #\%)            (return #:max-num 1)]
-    [(list  #\% #\&)        (return #:rest? #t)]
-    [(list* #\% #\# #\: cs) (return #:kws (~> cs list->string string->keyword
-                                              list))]
-    [(list* #\% cs)         (let ([n (~> cs list->string string->number)])
-                              (cond [n    (return #:max-num n)]
-                                    [else (return)]))]
-    [_                      (return)]))
+    [(list)           (return)]
+    [(list  #\%)      (return #:max-num 1)]
+    [(list  #\% #\&)  (return #:rest? #t)]
+    [(list* #\% #\# #\: cs)
+     (return #:kws (~> cs list->string string->keyword list))]
+    [(list #\% (? char-numeric? cs) ...)
+     (return #:max-num (~> cs list->string string->number))]
+    [_ (return)]))
 
 ;; find-arg-info/pair :
 ;;   (Cons Symbol Symbol) -> (Values Natural Boolean (Listof Keyword))
