@@ -17,6 +17,9 @@ link:
 unlink:
 	raco pkg remove $(PACKAGENAME)
 
+test:
+	raco test -x .
+
 htmldocs: $(SCRBL)
 	raco scribble \
 		--html \
