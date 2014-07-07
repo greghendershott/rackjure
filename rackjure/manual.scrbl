@@ -562,31 +562,37 @@ or in Racket:
 ]
 
 @itemize[
-@item{@tt{%1} through @tt{%9} are positional arguments}
+@item{@tt{%1} through @tt{%@italic{n}} are positional arguments}
 @item{@tt{%} is a synonym for @tt{%1}}
 @item{@tt{%&} is a rest argument}
 @item{@tt{%#:keyword} is a @racket[#:keyword] argument}
 ]
 
-The Racket reader already uses @tt{#(  )} for vector literals.
-Therefore Rackjure instead uses your choice of @tt{#fn(  )},
-@tt{#λ(  )}, or @tt{#lambda(  )}.
+The Racket reader already uses @litchar{#( )} for vector literals.
+Therefore Rackjure instead uses your choice of @litchar{#fn( )},
+@litchar{#λ( )}, or @litchar{#lambda( )}.
 
 Examples:
 
 @verbatim{
-(map #λ(+ % 1) '(1 2 3)) ;=> '(2 3 4)
-(map #λ(+ % %2) '(1 2 3) '(1 2 3)) ;=> '(2 4 6)
+> (map #λ(+ % 1) '(1 2 3))
+'(2 3 4)
+> (map #λ(+ % %2) '(1 2 3) '(1 2 3))
+'(2 4 6)
 
 ;; Rest argument
-(#λ(apply list* % %&) 1 '(2 3)) ;=> '(1 2 3)
+> (#λ(apply list* % %&) 1 '(2 3))
+'(1 2 3)
 
 ;; Keyword argument
-(#λ(* 1/2 %#:m (* %#:v %#:v)) #:m 2 #:v 1) ;=> 1
+> (#λ(* 1/2 %#:m (* %#:v %#:v)) #:m 2 #:v 1)
+1
 
 ;; Ignores unused arguments
-(#λ(begin %2) "ignored" "used") ;=> "used"
+> (#λ(begin %2) "ignored" "used")
+"used"
 
 ;; Handles an arbitary number of arguments
-(apply #λ(list %1 %42) (build-list 42 add1)) ;=> (list 1 42)
+> (apply #λ(list %1 %42) (build-list 42 add1))
+(list 1 42)
 }
