@@ -1,6 +1,6 @@
 PACKAGENAME=rackjure
 COLLECTS=rackjure
-SCRBL=rackjure/manual.scrbl
+SCRBL=rackjure/rackjure.scrbl
 
 all: setup
 
@@ -9,7 +9,7 @@ clean:
 	rm -rf htmldocs
 
 setup:
-	raco setup $(COLLECTS)
+	raco setup --tidy $(COLLECTS)
 
 link:
 	raco pkg install --link -n $(PACKAGENAME) $$(pwd)
