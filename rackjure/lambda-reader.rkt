@@ -94,7 +94,7 @@
   (cond [(syntax? stx) (syntax-e stx)]
         [else stx]))
 
-(define (reader-proc ch in src line col pos)
+(define ((make-reader-proc [orig-readtable (current-readtable)]) ch in src line col pos)
   (define (normal-read-syntax src in)
     (parameterize ([current-readtable orig-readtable])
       (read-syntax src in)))
@@ -111,16 +111,22 @@
                [else (unget-normal-read-syntax "#f" src in)])]
         [else (~> (normal-read-syntax src in) parse)])) ;single letter e.g. #λ
 
-(define orig-readtable (current-readtable))
+;(define orig-readtable (current-readtable))
 
-(define lambda-readtable (~> orig-readtable
-                             (make-readtable #\λ 'dispatch-macro reader-proc)
-                             (make-readtable #\f 'dispatch-macro reader-proc)
-                             (make-readtable #\l 'dispatch-macro reader-proc)))
+(define (make-lambda-readtable [orig-readtable (current-readtable)])
+  (define reader-proc (make-reader-proc orig-readtable))
+  (~> orig-readtable
+      (make-readtable #\λ 'dispatch-macro reader-proc)
+      (make-readtable #\f 'dispatch-macro reader-proc)
+      (make-readtable #\l 'dispatch-macro reader-proc)))
 
-(current-readtable lambda-readtable)
+(define lambda-readtable (make-lambda-readtable))
+;(define reader-proc (make-reader-proc))
+
+;(current-readtable lambda-readtable)
 
 ;; A `#:wrapper1` for `syntax/module-reader`
 (define (wrapper1 thk)
-  (parameterize ([current-readtable lambda-readtable])
+  (define orig-readtable (current-readtable))
+  (parameterize ([current-readtable (make-lambda-readtable orig-readtable)])
     (thk)))
