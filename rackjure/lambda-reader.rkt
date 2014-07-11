@@ -13,9 +13,11 @@
   (with-syntax ([args (parse-args stx)]
                 [%1 (datum->syntax stx '%1 stx)]
                 [body stx])
-    #'(lambda args
-        (define-syntax % (make-rename-transformer #'%1))
-        body)))
+    (syntax-property
+     #'(lambda args
+         (define-syntax % (make-rename-transformer #'%1))
+         body)
+     'afl #t)))
 
 (module+ test
   (require rackunit)

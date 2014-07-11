@@ -7,7 +7,7 @@
                      rackjure/dict
                      rackjure/egal
                      rackjure/str
-                     rackjure/threading
+                     (except-in rackjure/threading %)
                      rackjure/utils
                      racket))
 
@@ -180,6 +180,60 @@ Analogous to @tt{some->} in Clojure, i.e. stop threading at a
 Analogous to @tt{some->>} in Clojure, i.e. stop threading at a
 @racket[#f] value.
 
+}
+
+@defform[(~>% expression form ...)]{
+
+Like @racket[~>], except that instead of always inserting the expression
+as the second item of each form, it insertes it every place where there
+is a @racket[%] placeholder.  
+
+If there is no @racket[%] in the form, it simply treats the form as if it were
+@racket[(form %)].
+
+It also cooperates with @secref["func-lit"] so that the expression doesn't
+get inserted in a @racket[%] that's being used as an argument.
+
+@racketblock[
+(~>% #"foobar" bytes-length (number->string % 16) string->bytes/utf-8)
+]
+
+based on the
+@hyperlink["https://github.com/rplevy/swiss-arrows#a-generalization-of-the-arrow"]{"diamond wand" from rplevy/swiss-arrows}.
+}
+
+@defform[(~>_ expression form ...)]{
+
+Like @racket[~>%], except that it uses @racket[_] as a placeholder instead of
+@racket[%].  
+
+@racketblock[
+(~>_ #"foobar" bytes-length (number->string _ 16) string->bytes/utf-8)
+]}
+
+@defform[(some~>% expression form ...)]{
+Like @racket[~>%], except that it stops threading at a @racket[#f] value like
+@racket[some~>] would.
+}
+
+@defform[(some~>_ expression form ...)]{
+Like @racket[~>_], except that it stops threading at a @racket[#f] value like
+@racket[some~>] would.
+}
+
+@defproc[(~>f [expression any/c] [proc procedure?] ...) any/c]{
+Like @racket[~>], except that it can be used a function.  
+It still works as a macro if you use @racket[(~>f expression proc ...)],
+but it doesn't insert the expression into the form, it simply applies the proc
+to the expression.
+@racketblock[
+(~>f #"foobar" bytes-length (λ (n) (number->string n 16)) string->bytes/utf-8)
+(apply ~>f #"foobar" (list bytes-length (λ (n) (number->string n 16)) string->bytes/utf-8))
+]}
+
+@defproc[(some~>f [expression any/c] [proc procedure?] ...) any/c]{
+Like @racket[~>f], except that it stops threading at a @racket[#f] value like
+@racket[some~>] would.
 }
 
 @;--------------------------------------------------------------------
