@@ -16,6 +16,10 @@
                   [sandbox-error-output 'string])
      (make-evaluator 'rackjure)))
 
+@;; example: @racket[(map @#,afl[(+ % 1)] '(1 2 3))]
+@(define-syntax-rule @afl[form ...]
+   @elem{@tt{#λ}@racket[form ...]})
+
 @title{#lang rackjure}
 
 Provide a few Clojure-inspired ideas in Racket. Where Racket and
@@ -228,6 +232,7 @@ but it doesn't insert the expression into the form, it simply applies the proc
 to the expression.
 @racketblock[
 (~>f #"foobar" bytes-length (λ (n) (number->string n 16)) string->bytes/utf-8)
+(~>f #"foobar" bytes-length @#,afl[(number->string % 16)] string->bytes/utf-8)
 (apply ~>f #"foobar" (list bytes-length (λ (n) (number->string n 16)) string->bytes/utf-8))
 ]}
 
@@ -714,24 +719,24 @@ Therefore Rackjure instead uses your choice of @litchar{#fn( )},
 Examples:
 
 @verbatim{
-> (map #λ(+ % 1) '(1 2 3))
-'(2 3 4)
-> (map #λ(+ % %2) '(1 2 3) '(1 2 3))
-'(2 4 6)
+> @racket[(map @#,afl[(+ % 1)] '(1 2 3))]
+@racketresult['(2 3 4)]
+> @racket[(map @#,afl[(+ % %2)] '(1 2 3) '(1 2 3))]
+@racketresult['(2 4 6)]
 
-;; Rest argument
-> (#λ(apply list* % %&) 1 '(2 3))
-'(1 2 3)
+@racketcommentfont{;; Rest argument}
+> @racket[(@#,afl[(apply list* % %&)] 1 '(2 3))]
+@racketresult['(1 2 3)]
 
-;; Keyword argument
-> (#λ(* 1/2 %#:m (* %#:v %#:v)) #:m 2 #:v 1)
-1
+@racketcommentfont{;; Keyword argument}
+> @racket[(@#,afl[(* 1/2 %#:m (* %#:v %#:v))] #:m 2 #:v 1)]
+@racketresult[1]
 
-;; Ignores unused arguments
-> (#λ(begin %2) "ignored" "used")
-"used"
+@racketcommentfont{;; Ignores unused arguments}
+> @racket[(@#,afl[(begin %2)] "ignored" "used")]
+@racketresult["used"]
 
-;; Handles an arbitary number of arguments
-> (apply #λ(list %1 %42) (build-list 42 add1))
-(list 1 42)
+@racketcommentfont{;; Handles an arbitary number of arguments}
+> @racket[(apply @#,afl[(list %1 %42)] (build-list 42 add1))]
+@racketresult['(1 42)]
 }
