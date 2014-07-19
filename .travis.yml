@@ -18,7 +18,7 @@ install:
 before_script:
 
 script:
-    - make link
+    - raco link rackjure
     - make setup
     - make test
 
