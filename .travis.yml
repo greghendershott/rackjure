@@ -19,7 +19,8 @@ before_script:
 
 script:
     - raco link rackjure
-    - make setup
-    - make test
+    - cd rackjure
+    - raco make main.rkt
+    - raco test -x .
 
 after_script:
