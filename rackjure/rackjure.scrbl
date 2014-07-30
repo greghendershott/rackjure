@@ -332,7 +332,7 @@ Creates an association list.
 
 @defmodule[rackjure/dict]
 
-To ease the work with dictionaries, @tt{#lang rackjure} also provides 2
+To ease the work with dictionaries, @tt{#lang rackjure} also provides some
 utility functions that might come in handy at times.
 
 @defproc[(dict-merge [d0 dict?] [d1 dict?]) dict?]{
