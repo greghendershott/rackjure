@@ -383,6 +383,32 @@ tell @racket[dict-merge] to delete the key.
 }
 
 }
+}
+
+@defproc[(dict->curly-string [d dict?]
+                             [depth exact-nonnegative-integer? 0]
+                             [indent exact-nonnegative-integer? 0])
+         string?]{
+
+Returns a @tt{{}} style string describing the nested dicts.
+
+@codeblock{
+> (define sample-dict '([a . 0]
+                        [b . 0]
+                        [c . ([a . 0]
+                              [b . 0]
+                              [c . ([a . 0]
+                                    [b . 0]
+                                    [c . 0])])]))
+> (displayln (dict->curly-string sample-dict))
+{'a 0
+ 'b 0
+ 'c {'a 0
+     'b 0
+     'c {'a 0
+         'b 0
+         'c 0}}}
+}
 
 }
 
