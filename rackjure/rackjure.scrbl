@@ -328,6 +328,91 @@ Creates an association list.
 }
 
 @;----------------------------------------------------------------------------
+@section{Dictionary utilities}
+
+@defmodule[rackjure/dict]
+
+To ease the work with dictionaries, @tt{#lang rackjure} also provides some
+utility functions that might come in handy at times.
+
+@defproc[(dict-merge [d0 dict?] [d1 dict?]) dict?]{
+
+Functionally merge @tt{d1} into @tt{d0}. Values in @tt{d0} are overriden by
+values with the same key in @tt{d1}. When a value in @tt{d1} is itself a
+@racket[dict?], then it is handled recursively.
+
+@codeblock{
+> (dict-merge {} {'type 'line})
+'((type . line))
+> (dict-merge {'type 'triangle 'sides  3}
+              {'type 'square   'sides  4})
+'((type . square) (sides . 4))
+> (dict-merge {'people {'john {'age 10}
+                        'mary {'age 7}}}
+              {'people {'john {'age 11}}})
+'((people (john (age . 11)) (mary (age . 7))))
+}
+
+Setting a value in @tt{d1} to @tt{'DELETE} causes it to be deleted from
+@tt{d0}. If the corresponding key doesn't exist, it's silently passed.
+
+@codeblock{
+> (dict-merge {'type 'line}
+              {'type 'DELETE})
+'()
+> (dict-merge {}
+              {'type 'DELETE})
+'()
+}
+
+The special value @tt{'DELETE} that defines this deletion behavior could be
+changed with the @racket[dict-merge-delete-value] parameter:
+
+@defparam[dict-merge-delete-value v any/c]{
+   
+Defaults to @tt{'DELETE}. Could be set to any single value that is used to
+tell @racket[dict-merge] to delete the key.
+
+@codeblock{
+> (parameterize ([dict-merge-delete-value 'remove-me!])
+    (dict-merge {'type 'line} {'type 'DELETE}))
+'((type . DELETE))
+> (parameterize ([dict-merge-delete-value 'remove-me!])
+    (dict-merge {'type 'line} {'type 'remove-me!}))
+'()
+}
+
+}
+}
+
+@defproc[(dict->curly-string [d dict?]
+                             [depth exact-nonnegative-integer? 0]
+                             [indent exact-nonnegative-integer? 0])
+         string?]{
+
+Returns a @tt{{}} style string describing the nested dicts.
+
+@codeblock{
+> (define sample-dict '([a . 0]
+                        [b . 0]
+                        [c . ([a . 0]
+                              [b . 0]
+                              [c . ([a . 0]
+                                    [b . 0]
+                                    [c . 0])])]))
+> (displayln (dict->curly-string sample-dict))
+{'a 0
+ 'b 0
+ 'c {'a 0
+     'b 0
+     'c {'a 0
+         'b 0
+         'c 0}}}
+}
+
+}
+
+@;----------------------------------------------------------------------------
 @section{Strings}
 
 @defmodule[rackjure/str]
