@@ -2,8 +2,8 @@
 
 ;; all hail Baker! http://home.pipeline.com/~hbaker1/ObjectIdentity.html
 
-(require racket/stream
-         racket/set)
+(require racket/set
+         racket/stream)
 
 (provide egal?)
 

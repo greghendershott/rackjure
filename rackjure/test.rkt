@@ -68,7 +68,7 @@
   (check-exn exn:fail:syntax?
              (thunk (eval #'(module m rackjure
                               {0 1 2})))
-             "expected even number of items for dictionary"))
+             "expected even number of keys and values for dictionary"))
 
 ;;; Tests of lambda reader macro not convenient to put in lambda-reader.rkt
 

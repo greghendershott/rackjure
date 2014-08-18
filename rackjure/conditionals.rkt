@@ -1,8 +1,11 @@
 #lang racket/base
 
-(provide if-let when-let if-not when-not)
-
 (require syntax/parse/define)
+
+(provide if-let
+         when-let
+         if-not
+         when-not)
 
 (define-simple-macro (if-let [binding:id value:expr] then:expr else:expr)
   (let ([binding value])

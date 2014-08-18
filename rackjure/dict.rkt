@@ -1,6 +1,9 @@
 #lang racket/base
 
-(require racket/contract racket/dict racket/function "alist.rkt")
+(require racket/contract
+         racket/dict
+         racket/function
+         "alist.rkt")
 
 (provide
  (contract-out

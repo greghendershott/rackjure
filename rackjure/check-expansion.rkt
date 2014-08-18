@@ -1,9 +1,11 @@
 #lang racket/base
 
-(require (for-syntax racket/base syntax/parse)
+(require (for-syntax racket/base
+                     syntax/parse)
          rackunit)
 
-(provide check-expand-once check-expand-fully)
+(provide check-expand-once
+         check-expand-fully)
 
 ;; 1. These are macros not functions so that check failure source
 ;; location will be correct. Also, note we need to use quasisyntax/loc

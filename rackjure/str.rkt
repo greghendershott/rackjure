@@ -1,6 +1,8 @@
 #lang racket/base
 
-(require racket/contract racket/string racket/function)
+(require racket/contract
+         racket/function
+         racket/string)
 
 (provide
  (contract-out

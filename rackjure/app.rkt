@@ -1,5 +1,16 @@
 #lang racket/base
 
+(require (for-syntax racket/base
+                     racket/list
+                     syntax/parse)
+         racket/dict
+         "alist.rkt")
+
+(provide -#%app
+         alist
+         alist?
+         current-curly-dict)
+
 ;; Provide an alternative `#%app` to:
 ;;
 ;; [1] Implement applicable `dict?`s.
@@ -35,17 +46,6 @@
 ;; [2] Expand `{k v ... ...}` as `((current-curly-dict) k v ... ...)`.
 ;; The current-curly-dict parameter may be e.g. `hash`, `hasheq`,
 ;; `alist`.
-
-(provide -#%app
-         alist
-         alist?
-         current-curly-dict)
-
-(require (for-syntax racket/base
-                     syntax/parse
-                     racket/list)
-         racket/dict
-         "alist.rkt")
 
 (define (maybe-dict-ref x y)
   (cond [(procedure? x) (#%app    x y)]     ;check normal case first/fast
