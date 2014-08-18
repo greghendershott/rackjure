@@ -77,11 +77,13 @@
   (syntax-parse stx
     ;; { key val ... ... } dict literals
     [(_ x:expr ...) #:when (eq? (syntax-property stx 'paren-shape) #\{)
-     (unless (zero? (remainder (length (syntax->list #'(x ...))) 2))
-       (raise-syntax-error '|{ }|
-                           "expected even number of items for dictionary"
-                           (datum->syntax #f (cdr (syntax->list stx)) stx stx)
-                           (last (syntax->list #'(x ...)))))
+     (define stxs (syntax->list #'(x ...)))
+     (unless (zero? (remainder (length stxs) 2))
+       (raise-syntax-error
+        '|{ }|
+        "expected even number of keys and values for dictionary"
+        #'(x ...)
+        (last stxs)))
      #'((current-curly-dict) x ...)]
     ;; Arities that might be dict applications
     [(_ x:expr y:expr)               #'(maybe-dict-ref x y)]
