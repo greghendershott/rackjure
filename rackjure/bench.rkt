@@ -5,7 +5,7 @@
   (define-syntax (time* stx)
     (syntax-case stx ()
       [(_ e)
-       (with-syntax ([ed (format "~v" (syntax->datum #'e))])
+       (with-syntax ([ed (format "~s" (syntax->datum #'e))])
          #`(begin
              (displayln ed)
              (for ([i 3]) (collect-garbage))
@@ -21,7 +21,7 @@
   (define-syntax (time* stx)
     (syntax-case stx ()
       [(_ e)
-       (with-syntax ([ed (format "~v" (syntax->datum #'e))])
+       (with-syntax ([ed (format "~s" (syntax->datum #'e))])
          #`(begin
              (displayln ed)
              (for ([i 3]) (collect-garbage))
