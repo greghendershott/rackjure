@@ -2,7 +2,8 @@
 
 (require version/utils)
 
-(provide partial box-swap!)
+(provide partial
+         box-swap!)
 
 (module+ test
   (require rackunit))

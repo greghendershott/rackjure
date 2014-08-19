@@ -1,5 +1,5 @@
 #lang s-exp syntax/module-reader
-rackjure
+rackjure/base
 #:wrapper1 wrapper1
 
-(require "../lambda-reader.rkt")
+(require "../../lambda-reader.rkt")

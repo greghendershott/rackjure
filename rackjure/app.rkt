@@ -1,5 +1,16 @@
 #lang racket/base
 
+(require (for-syntax racket/base
+                     racket/list
+                     syntax/parse)
+         racket/dict
+         "alist.rkt")
+
+(provide -#%app
+         alist
+         alist?
+         current-curly-dict)
+
 ;; Provide an alternative `#%app` to:
 ;;
 ;; [1] Implement applicable `dict?`s.
@@ -36,17 +47,6 @@
 ;; The current-curly-dict parameter may be e.g. `hash`, `hasheq`,
 ;; `alist`.
 
-(provide -#%app
-         alist
-         alist?
-         current-curly-dict)
-
-(require (for-syntax racket/base
-                     syntax/parse
-                     racket/list)
-         racket/dict
-         "alist.rkt")
-
 (define (maybe-dict-ref x y)
   (cond [(procedure? x) (#%app    x y)]     ;check normal case first/fast
         [(dict? x)      (dict-ref x y #f)]  ;(dict key)
@@ -77,11 +77,13 @@
   (syntax-parse stx
     ;; { key val ... ... } dict literals
     [(_ x:expr ...) #:when (eq? (syntax-property stx 'paren-shape) #\{)
-     (unless (zero? (remainder (length (syntax->list #'(x ...))) 2))
-       (raise-syntax-error '|{ }|
-                           "expected even number of items for dictionary"
-                           (datum->syntax #f (cdr (syntax->list stx)) stx stx)
-                           (last (syntax->list #'(x ...)))))
+     (define stxs (syntax->list #'(x ...)))
+     (unless (zero? (remainder (length stxs) 2))
+       (raise-syntax-error
+        '|{ }|
+        "expected even number of keys and values for dictionary"
+        #'(x ...)
+        (last stxs)))
      #'((current-curly-dict) x ...)]
     ;; Arities that might be dict applications
     [(_ x:expr y:expr)               #'(maybe-dict-ref x y)]

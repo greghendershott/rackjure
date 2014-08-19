@@ -1,9 +1,14 @@
 #lang racket/base
 
-(provide ~> ~>> some~> some~>>)
+(require (for-syntax racket/base
+                     syntax/parse
+                     syntax/stx)
+         (only-in "conditionals.rkt" if-let))
 
-(require (for-syntax racket/base syntax/stx syntax/parse))
-(require (only-in "conditionals.rkt" if-let))
+(provide ~>
+         ~>>
+         some~>
+         some~>>)
 
 (module+ test
   (require "check-expansion.rkt")

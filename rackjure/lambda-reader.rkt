@@ -1,11 +1,10 @@
 #lang racket/base
 
-(require syntax/parse
+(require (for-syntax racket/base)
          racket/match
-         (only-in racket/port input-port-append)
-         (only-in racket/list filter-map remove-duplicates append*)
          rackjure/threading
-         (for-syntax racket/base))
+         (only-in racket/list filter-map remove-duplicates append*)
+         (only-in racket/port input-port-append))
 
 (provide wrapper1
          lambda-readtable)
