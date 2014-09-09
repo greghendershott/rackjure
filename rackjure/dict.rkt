@@ -8,11 +8,8 @@
 (provide
  (contract-out
   [dict-merge (dict? dict? . -> . dict?)]
-  [dict-merge-delete-value (() (any/c) . ->* . any/c)]
-  [dict->curly-string ((dict?)
-                       (exact-nonnegative-integer? exact-nonnegative-integer?)
-                       . ->* . string?)]
-  ))
+  [dict-merge-delete-value (parameter/c any/c)]
+  [dict->curly-string (dict? . -> . string?)]))
 
 (module+ test
   (require rackunit))
@@ -67,26 +64,28 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Return a {} style string describing the nested dicts
-(define (dict->curly-string d [depth 0] [indent 0])
-  (define concat string-append)         ;minimize indent
-  (define ~v (curry format "~v"))
-  (concat "{"
-          (for/fold ([s ""])
-                    ([(k v) (in-dict d)]
-                     [i (in-naturals)])
-            (concat s
-                    (cond [(zero? i) ""]
-                          [else (make-string (+ indent depth 1) #\space)])
-                    (~v k)
-                    " "
-                    (cond [(dict? v) (dict->curly-string
-                                      v
-                                      (add1 depth)
-                                      (+ 1 indent (string-length (~v k))))]
-                          [else (~v v)])
-                    (cond [(= i (- (length (dict-keys d)) 1)) "}"]
-                          [else "\n"])
-                    ))))
+(define (dict->curly-string d)
+  (define (~v v) (format "~v" v))
+  (let loop ([d d]
+             [depth 0]
+             [indent 0])
+    (string-append
+     "{"
+     (for/fold ([s ""])
+               ([(k v) (in-dict d)]
+                [i (in-naturals)])
+       (string-append
+        s
+        (cond [(zero? i) ""]
+              [else (make-string (+ indent depth 1) #\space)])
+        (~v k)
+        " "
+        (cond [(dict? v) (loop v
+                               (add1 depth)
+                               (+ 1 indent (string-length (~v k))))]
+              [else (~v v)])
+        (cond [(= i (- (length (dict-keys d)) 1)) "}"]
+              [else "\n"]))))))
 
 (module+ test
   (check-equal?

@@ -332,14 +332,13 @@ Creates an association list.
 
 @defmodule[rackjure/dict]
 
-To ease the work with dictionaries, @tt{#lang rackjure} also provides some
-utility functions that might come in handy at times.
+A few utility functions for @racket[dict]s.
 
 @defproc[(dict-merge [d0 dict?] [d1 dict?]) dict?]{
 
-Functionally merge @tt{d1} into @tt{d0}. Values in @tt{d0} are overriden by
-values with the same key in @tt{d1}. When a value in @tt{d1} is itself a
-@racket[dict?], then it is handled recursively.
+Functionally merge @racket[d1] into @racket[d0]. Values in @racket[d0]
+are overriden by values with the same key in @racket[d1]. Nested
+@racket[dict]s are handled recursively.
 
 @codeblock{
 > (dict-merge {} {'type 'line})
@@ -353,44 +352,43 @@ values with the same key in @tt{d1}. When a value in @tt{d1} is itself a
 '((people (john (age . 11)) (mary (age . 7))))
 }
 
-Setting a value in @tt{d1} to @tt{'DELETE} causes it to be deleted from
-@tt{d0}. If the corresponding key doesn't exist, it's silently passed.
+Setting a value in @racket[d1] to the current value of the
+@racket[dict-merge-delete-value] parameter -- which defaults to
+@racket['DELETE] -- causes the key/value in @racket[d0] with that key
+to be deleted from the returned dictionary.
 
 @codeblock{
-> (dict-merge {'type 'line}
-              {'type 'DELETE})
-'()
-> (dict-merge {}
-              {'type 'DELETE})
-'()
+> (dict-merge '([a . a][b . b])
+              '([b . DELETE]))
+'([a . a])
 }
-
-The special value @tt{'DELETE} that defines this deletion behavior could be
-changed with the @racket[dict-merge-delete-value] parameter:
 
 @defparam[dict-merge-delete-value v any/c]{
    
-Defaults to @tt{'DELETE}. Could be set to any single value that is used to
-tell @racket[dict-merge] to delete the key.
+Defaults to @racket['DELETE]. Used to tell @racket[dict-merge] that a
+key/value pair with that key should be deleted.
 
 @codeblock{
-> (parameterize ([dict-merge-delete-value 'remove-me!])
-    (dict-merge {'type 'line} {'type 'DELETE}))
-'((type . DELETE))
-> (parameterize ([dict-merge-delete-value 'remove-me!])
-    (dict-merge {'type 'line} {'type 'remove-me!}))
-'()
+> (parameterize ([dict-merge-delete-value 'DELETE])
+    (dict-merge '([a . a]
+                  [b . b])
+                '([b . DELETE])))
+'([a . a])
+> (parameterize ([dict-merge-delete-value 'FOO])
+    (dict-merge '([a . a]
+                  [b . b])
+                '([a . DELETE]
+                  [b . FOO])))
+'((a . DELETE))
 }
 
 }
 }
 
-@defproc[(dict->curly-string [d dict?]
-                             [depth exact-nonnegative-integer? 0]
-                             [indent exact-nonnegative-integer? 0])
-         string?]{
+@defproc[(dict->curly-string [d dict?]) string?]{
 
-Returns a @tt{{}} style string describing the nested dicts.
+Returns a @tt{{}} @racket[style] string describing the @racket[dict]
+@racket[d], including any nested @racket[dict]s.
 
 @codeblock{
 > (define sample-dict '([a . 0]
