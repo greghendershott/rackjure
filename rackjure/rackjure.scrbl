@@ -419,7 +419,7 @@ Returns a @tt{{}} @racket[style] string describing the @racket[dict]
 [expression any/c] ...
 [#:fmt fmt ~a]
 [#:sep sep ""]
-) string?]{
+) (and/c string? immutable?)]{
 
 @racket[str] can be a succinct alternative to @racket[string-append]
 and/or @racket[format].
