@@ -21,6 +21,12 @@
 
 (define-syntax-rule (-#%module-begin form ...)
   (#%module-begin
-   (require (only-in rackjure/lambda-reader make-lambda-readtable))
-   (current-readtable (make-lambda-readtable (current-readtable)))
+   (module configure-runtime racket/base
+     (require (only-in rackjure/lambda-reader make-lambda-readtable))
+     (current-read-interaction
+      (let ([old-read (current-read-interaction)])
+        (lambda (src in)
+          (parameterize ([current-readtable (make-lambda-readtable (current-readtable))])
+            (old-read src in)))))
+     )
    form ...))
