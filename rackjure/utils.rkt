@@ -1,24 +1,14 @@
 #lang racket/base
 
-(require version/utils)
+(require version/utils
+         ;; For backward compatibility, provide `partial`
+         (only-in "function.rkt" partial))
 
-(provide partial
-         box-swap!)
+(provide box-swap!
+         partial)
 
 (module+ test
   (require rackunit))
-
-(define ((partial f . args1) . args2)
-  (apply f (append args1 args2)))
-
-(module+ test
-  ;; If we tested against the variable-arity `+` there would
-  ;; be no difference between `partial` and `curry`.
-  (define (+* x y) (+ x y))
-
-  (check-equal? ((partial +*) 1 2) 3)
-  (check-equal? ((partial +* 1) 2) 3)
-  (check-equal? ((partial +* 1 2)) 3))
 
 (define (-box-swap! box f . args)
   (let loop ()

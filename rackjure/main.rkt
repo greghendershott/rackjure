@@ -4,6 +4,7 @@
          "app.rkt"
          "conditionals.rkt"
          "dict.rkt"
+         "function.rkt"
          "str.rkt"
          "threading.rkt"
          "utils.rkt")
@@ -14,6 +15,7 @@
          (all-from-out "alist.rkt"
                        "conditionals.rkt"
                        "dict.rkt"
+                       "function.rkt"
                        "str.rkt"
                        "threading.rkt"
                        "utils.rkt"))
