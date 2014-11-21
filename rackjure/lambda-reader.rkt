@@ -7,7 +7,8 @@
          (only-in racket/port input-port-append))
 
 (provide wrapper1
-         lambda-readtable)
+         lambda-readtable
+         make-lambda-readtable)
 
 (define (parse stx)
   (with-syntax ([args (parse-args stx)]
