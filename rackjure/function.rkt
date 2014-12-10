@@ -1,7 +1,10 @@
 #lang racket/base
 
+(require racket/match)
+
 (provide partial
          partition
+         drop
          take
          juxt
          every?
@@ -22,7 +25,7 @@
   (check-equal? ((partial +* 1) 2) 3)
   (check-equal? ((partial +* 1 2)) 3))
 
-;; Clojure-style partition
+;; Clojure-style `partition` (not at all like Racket's).
 ;;
 ;; "Returns a lazy sequence of lists of n items each, at offsets step
 ;; apart. If step is not supplied, defaults to n, i.e. the partitions
@@ -31,23 +34,18 @@
 ;; are not enough padding elements, return a partition with less than
 ;; n items."
 (define partition
-  (case-lambda [(n xs)
-           (partition n n xs)]
-          [(n step xs)
-           (cond [(null? xs) '()]
-                 [else
-                  (define ys (take xs n))
-                  (cond [(= (length ys) n)
-                         (cons ys (partition n step (skip xs step)))]
-                        [else '()])])]
-          [(n step pad xs)
-           (cond [(null? xs) '()]
-                 [else
-                  (define ys (take xs n))
-                  (cond [(= (length ys) n)
-                         (cons ys (partition n step pad (skip xs step)))]
-                        [else
-                         (list (take (append ys pad) n))])])]))
+  (match-lambda*
+    [(list n xs) (partition n n xs)]
+    [(list n step (list)) (list)]
+    [(list n step xs)
+     (define ys (take xs n))
+     (cond [(= (length ys) n) (cons ys (partition n step (drop xs step)))]
+           [else '()])]
+    [(list n step pad (list)) (list)]
+    [(list n step pad xs)
+     (define ys (take xs n))
+     (cond [(= (length ys) n) (cons ys (partition n step pad (drop xs step)))]
+           [else (list (take (append ys pad) n))])]))
 
 (module+ test
   ;; 2-arg variant
@@ -62,17 +60,18 @@
   (check-equal? (partition 3 3 '(pad pad pad) '(1 2 3 4 5 6 7))
                 '((1 2 3) (4 5 6) (7 pad pad))))
 
-(define (skip xs n)
-  (cond [(and (> n 0) (not (null? xs))) (skip (cdr xs) (sub1 n))]
+;; Like Racket `drop` but OK if list has fewer than `n` members.
+(define (drop xs n)
+  (cond [(and (> n 0) (not (null? xs))) (drop (cdr xs) (sub1 n))]
         [else xs]))
 
 (module+ test
   (let ([xs '(1 2 3 4)])
-    (check-equal? (skip xs -1) '(1 2 3 4))
-    (check-equal? (skip xs 0) '(1 2 3 4))
-    (check-equal? (skip xs 4) '())
-    (check-equal? (skip xs 5) '())
-    (check-equal? (skip xs 2) '(3 4))))
+    (check-equal? (drop xs -1) '(1 2 3 4))
+    (check-equal? (drop xs 0) '(1 2 3 4))
+    (check-equal? (drop xs 4) '())
+    (check-equal? (drop xs 5) '())
+    (check-equal? (drop xs 2) '(3 4))))
 
 ;; Like `take`, but OK if list has fewer than `n` members.
 (define (take xs n)
@@ -96,7 +95,7 @@
 (define every? andmap)
 
 ;; Unlike `ormap`, which returns #t or #f, `some` returns the first
-;; item meeting ?, else #f.
+;; item satisfying ?, else #f. i.e. Like `for/for`.
 (define (some ? xs)
   (for/or ([x (in-list xs)])
     (if (? x) x #f)))
