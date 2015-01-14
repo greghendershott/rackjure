@@ -7,7 +7,7 @@
                      rackjure/dict
                      rackjure/egal
                      rackjure/str
-                     rackjure/threading
+                     (except-in rackjure/threading %)
                      rackjure/utils
                      racket))
 
@@ -15,6 +15,10 @@
    (parameterize ([sandbox-output 'string]
                   [sandbox-error-output 'string])
      (make-evaluator 'rackjure)))
+
+@;; example: @racket[(map @#,afl[(+ % 1)] '(1 2 3))]
+@(define-syntax-rule @afl[form ...]
+   @elem{@tt{#λ}@racket[form ...]})
 
 @title{#lang rackjure}
 
@@ -180,6 +184,61 @@ Analogous to @tt{some->} in Clojure, i.e. stop threading at a
 Analogous to @tt{some->>} in Clojure, i.e. stop threading at a
 @racket[#f] value.
 
+}
+
+@defform[(~>% expression form ...)]{
+
+Like @racket[~>], except that instead of always inserting the expression
+as the second item of each form, it insertes it every place where there
+is a @racket[%] placeholder.  
+
+If there is no @racket[%] in the form, it simply treats the form as if it were
+@racket[(form %)].
+
+It also cooperates with @secref["func-lit"] so that the expression doesn't
+get inserted in a @racket[%] that's being used as an argument.
+
+@racketblock[
+(~>% #"foobar" bytes-length (number->string % 16) string->bytes/utf-8)
+]
+
+based on the
+@hyperlink["https://github.com/rplevy/swiss-arrows#a-generalization-of-the-arrow"]{"diamond wand" from rplevy/swiss-arrows}.
+}
+
+@defform[(~>_ expression form ...)]{
+
+Like @racket[~>%], except that it uses @racket[_] as a placeholder instead of
+@racket[%].  
+
+@racketblock[
+(~>_ #"foobar" bytes-length (number->string _ 16) string->bytes/utf-8)
+]}
+
+@defform[(some~>% expression form ...)]{
+Like @racket[~>%], except that it stops threading at a @racket[#f] value like
+@racket[some~>] would.
+}
+
+@defform[(some~>_ expression form ...)]{
+Like @racket[~>_], except that it stops threading at a @racket[#f] value like
+@racket[some~>] would.
+}
+
+@defproc[(~>f [expression any/c] [proc procedure?] ...) any/c]{
+Like @racket[~>], except that it can be used a function.  
+It still works as a macro if you use @racket[(~>f expression proc ...)],
+but it doesn't insert the expression into the form, it simply applies the proc
+to the expression.
+@racketblock[
+(~>f #"foobar" bytes-length (λ (n) (number->string n 16)) string->bytes/utf-8)
+(~>f #"foobar" bytes-length @#,afl[(number->string % 16)] string->bytes/utf-8)
+(apply ~>f #"foobar" (list bytes-length (λ (n) (number->string n 16)) string->bytes/utf-8))
+]}
+
+@defproc[(some~>f [expression any/c] [proc procedure?] ...) any/c]{
+Like @racket[~>f], except that it stops threading at a @racket[#f] value like
+@racket[some~>] would.
 }
 
 @;--------------------------------------------------------------------
@@ -658,24 +717,24 @@ Therefore Rackjure instead uses your choice of @litchar{#fn( )},
 Examples:
 
 @verbatim{
-> (map #λ(+ % 1) '(1 2 3))
-'(2 3 4)
-> (map #λ(+ % %2) '(1 2 3) '(1 2 3))
-'(2 4 6)
+> @racket[(map @#,afl[(+ % 1)] '(1 2 3))]
+@racketresult['(2 3 4)]
+> @racket[(map @#,afl[(+ % %2)] '(1 2 3) '(1 2 3))]
+@racketresult['(2 4 6)]
 
-;; Rest argument
-> (#λ(apply list* % %&) 1 '(2 3))
-'(1 2 3)
+@racketcommentfont{;; Rest argument}
+> @racket[(@#,afl[(apply list* % %&)] 1 '(2 3))]
+@racketresult['(1 2 3)]
 
-;; Keyword argument
-> (#λ(* 1/2 %#:m (* %#:v %#:v)) #:m 2 #:v 1)
-1
+@racketcommentfont{;; Keyword argument}
+> @racket[(@#,afl[(* 1/2 %#:m (* %#:v %#:v))] #:m 2 #:v 1)]
+@racketresult[1]
 
-;; Ignores unused arguments
-> (#λ(begin %2) "ignored" "used")
-"used"
+@racketcommentfont{;; Ignores unused arguments}
+> @racket[(@#,afl[(begin %2)] "ignored" "used")]
+@racketresult["used"]
 
-;; Handles an arbitary number of arguments
-> (apply #λ(list %1 %42) (build-list 42 add1))
-(list 1 42)
+@racketcommentfont{;; Handles an arbitary number of arguments}
+> @racket[(apply @#,afl[(list %1 %42)] (build-list 42 add1))]
+@racketresult['(1 42)]
 }

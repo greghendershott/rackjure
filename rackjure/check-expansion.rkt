@@ -5,7 +5,8 @@
          rackunit)
 
 (provide check-expand-once
-         check-expand-fully)
+         check-expand-fully
+         check-equal?)
 
 ;; 1. These are macros not functions so that check failure source
 ;; location will be correct. Also, note we need to use quasisyntax/loc
