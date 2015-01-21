@@ -31,29 +31,29 @@
 ;; Also rewritten to use a fold instead of recursive invocations to
 ;; avoid the issues described in CLJ-1121.
 
-(begin-for-syntax 
+(begin-for-syntax
   (define stx-coerce-to-list
     (syntax-parser
-     [((~literal quote) x) #'((quote x))]
-     ;; ^ We want to end up with ((quote x) y), NOT (quote x y).
-     [(form ...) #'(form ...)]
-     [ form      #'(form)]))
+      [((~literal quote) x) #'((quote x))]
+      ;; ^ We want to end up with ((quote x) y), NOT (quote x y).
+      [(form ...) #'(form ...)]
+      [ form      #'(form)]))
 
   (define ((keep-stxctx f) stx . args)
     (datum->syntax stx (syntax-e (apply f stx args))))
 
   (define (threading-syntax-parser threader)
     (syntax-parser
-     [(_ first rest ...)
-      (define normalized-rest (stx-map (keep-stxctx stx-coerce-to-list)
-                                       #'(rest ...)))
-      (foldl (keep-stxctx threader) #'first normalized-rest)])))
+      [(_ first rest ...)
+       (define normalized-rest (stx-map (keep-stxctx stx-coerce-to-list)
+                                        #'(rest ...)))
+       (foldl (keep-stxctx threader) #'first normalized-rest)])))
 
 (module+ test
   (define-syntax test-threader
     (threading-syntax-parser
      (lambda (form nested-form) #`(#,form . #,nested-form))))
-   
+
   (check-expand-once anchor #'(test-threader 1) #'1)
   (check-expand-once anchor #'(test-threader 1 f (g 2)) #'((g 2) (f) . 1)))
 
@@ -81,15 +81,15 @@
   (check-expand-once anchor #'(~> 1 (f 2))     #'(f 1 2))
   (check-expand-once anchor #'(~> #t (if 1 2)) #'(if #t 1 2))
   ;; ^ Check that it works with syntax forms
-  
+
   (check-expand-once  anchor #'(~>> 1 (f 2))       #'(f 2 1))
   (check-expand-fully anchor #'(~>> 1 + (~>> 1 +)) #'(#%app + '1 (#%app + '1)))
   ;; ^ Example from CLJ-1121
-  
+
   (check-expand-once anchor
                      #'(some~> 1 f)
                      #'(if-let [tmp 1](~> tmp (f)) #f))
-  
+
   (check-expand-once anchor
                      #'(some~>> 1 f)
                      #'(if-let [tmp 1](~>> tmp (f)) #f)))

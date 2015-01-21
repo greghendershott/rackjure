@@ -32,12 +32,12 @@
   ;; {} default `alist`
   (check-equal?
    {'key "value"
-         'request {'version 1.0
-                   'headers {'Content-Type "foo"
-                             'Content-Length 10}}
-         'response {'version 1.0
-                    'headers {'Content-Type "foo"
-                              'Content-Length 10}}}
+    'request {'version 1.0
+              'headers {'Content-Type "foo"
+                        'Content-Length 10}}
+    'response {'version 1.0
+               'headers {'Content-Type "foo"
+                         'Content-Length 10}}}
    (alist 'key "value"
           'request (alist 'version 1.0
                           'headers (alist 'Content-Type "foo"
@@ -50,12 +50,12 @@
   (check-equal?
    (parameterize ([current-curly-dict hasheq])
      {'key "value"
-           'request {'version 1.0
-                     'headers {'Content-Type "foo"
-                               'Content-Length 10}}
-           'response {'version 1.0
-                      'headers {'Content-Type "foo"
-                                'Content-Length 10}}})
+      'request {'version 1.0
+                'headers {'Content-Type "foo"
+                          'Content-Length 10}}
+      'response {'version 1.0
+                 'headers {'Content-Type "foo"
+                           'Content-Length 10}}})
    (hasheq 'key "value"
            'request (hasheq 'version 1.0
                             'headers (hasheq 'Content-Type "foo"

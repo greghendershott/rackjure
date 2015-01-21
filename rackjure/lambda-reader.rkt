@@ -41,7 +41,7 @@
 
 ;; parse-args : Stx -> KW-Formals-Stx
 (define (parse-args stx)
-  ;; Filter the stxs to those that start with %, 
+  ;; Filter the stxs to those that start with %,
   ;; find the maximum, find whether there are any
   ;; keyword arguments or a rest argument, and
   ;; produce kw-formals based on that.
