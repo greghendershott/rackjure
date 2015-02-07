@@ -48,23 +48,20 @@
 ;; `alist`.
 
 (define (maybe-dict-ref x y)
-  (cond [(procedure? x) (#%app    x y)]     ;check normal case first/fast
-        [(dict? x)      (dict-ref x y #f)]  ;(dict key)
+  (cond [(dict? x)      (dict-ref x y #f)]  ;(dict key)
         [(not y)        #f]                 ;(key #f) => #f
         [(dict? y)      (dict-ref y x #f)]  ;(key dict)
         [else (error 'applicable-dict
                      "No dict? supplied\nin: (~v ~v)" x y)]))
 
 (define (maybe-dict-ref/else x y #:else d)
-  (cond [(procedure? x) (#%app    x y #:else d)] ;check normal case first/fast
-        [(dict? x)      (dict-ref x y d)]        ;(dict key #:else default)
+  (cond [(dict? x)      (dict-ref x y d)]        ;(dict key #:else default)
         [(dict? y)      (dict-ref y x d)]        ;(key dict #:else default)
         [else (error 'applicable-dict
                      "No dict? supplied\nin: (~v ~v #:else ~a)" x y d)]))
 
 (define (maybe-dict-set x y z)
-  (cond [(procedure? x) (#%app    x y z)] ;normal case first/fast
-        [(dict? x)      (dict-set x y z)] ;(dict key val)
+  (cond [(dict? x)      (dict-set x y z)] ;(dict key val)
         [else (error 'applicable-dict
                      "No dict? supplied\nin: (~a ~a ~a)" x y z)]))
 
@@ -86,8 +83,15 @@
         (last stxs)))
      #'((current-curly-dict) x ...)]
     ;; Arities that might be dict applications
-    [(_ x:expr y:expr)               #'(maybe-dict-ref x y)]
-    [(_ x:expr y:expr #:else d:expr) #'(maybe-dict-ref/else x y #:else d)]
-    [(_ x:expr y:expr z:expr)        #'(maybe-dict-set x y z)]
+    ; Test the normal case first/fast
+    [(_ x:expr y:expr)               #'(let ([x_ x] [y_ y])
+                                         (cond [(procedure? x_) (#%app x_ y_)]
+                                               [else            (maybe-dict-ref x_ y_)]))]
+    [(_ x:expr y:expr #:else d:expr) #'(let ([x_ x] [y_ y] [d_ d])
+                                         (cond [(procedure? x_) (#%app x_ y_ #:else d_)]
+                                               [else            (maybe-dict-ref/else x_ y_ #:else d_)]))]
+    [(_ x:expr y:expr z:expr)        #'(let ([x_ x] [y_ y] [z_ z])
+                                         (cond [(procedure? x_) (#%app x_ y_ z_)]
+                                               [else            (maybe-dict-set x_ y_ z_)]))]
     ;; Else just the usual Racket #%app
     [(_ f      a ...)                #'(#%app f a ...)]))
