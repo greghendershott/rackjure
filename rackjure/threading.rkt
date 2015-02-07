@@ -119,13 +119,11 @@
     (require "check-expansion.rkt")
     (define-namespace-anchor anchor)
     ;; 1. Directly; expanding ~> macro
-    (check-expand-fully anchor
-                        #'(~> 1 +)
-                        #'(#%app maybe-dict-ref + (quote 1)))
+    (check-expand-fully/both anchor
+                             #'(~> 1 +)
+                             #'(#%app + (quote 1)))
     ;; 2. Indirectly; no implicit require of wrong #%app
-    (check-expand-fully anchor
-                        #'((hasheq 'a 42) 'a)
-                        #'(#%app maybe-dict-ref
-                                 (#%app maybe-dict-set
-                                        hasheq (quote a) (quote 42)) (quote a))))
+    (check-expand-fully/both anchor
+                             #'((hasheq 'a 42) 'a)
+                             #'(#%app (#%app hasheq (quote a) (quote 42)) (quote a))))
   (require 'test-dict-app))
