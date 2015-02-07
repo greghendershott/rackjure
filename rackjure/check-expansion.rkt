@@ -5,7 +5,9 @@
          rackunit)
 
 (provide check-expand-once
-         check-expand-fully)
+         check-expand-fully
+         check-expand-once/both
+         check-expand-fully/both)
 
 ;; 1. These are macros not functions so that check failure source
 ;; location will be correct. Also, note we need to use quasisyntax/loc
@@ -23,14 +25,20 @@
 
 (define-syntax (check-expansion stx)
   (syntax-parse stx
-    [(_ expander:id anchor:anchor input:expr expected:expr)
+    [(_ expander-input:id expander-expected:id anchor:anchor input:expr expected:expr)
      #`(parameterize ([current-namespace (namespace-anchor->namespace anchor)])
          #,(quasisyntax/loc stx
-             (check-equal? (syntax->datum (expander input))
-                           (syntax->datum expected))))]))
+             (check-equal? (syntax->datum (expander-input input))
+                           (syntax->datum (expander-expected expected)))))]))
 
 (define-syntax-rule (check-expand-once anchor input expected)
-  (check-expansion expand-once anchor input expected))
+  (check-expansion expand-once values anchor input expected))
 
 (define-syntax-rule (check-expand-fully anchor input expected)
-  (check-expansion expand anchor input expected))
+  (check-expansion expand values anchor input expected))
+
+(define-syntax-rule (check-expand-once/both anchor input expected)
+  (check-expansion expand-once expand-once anchor input expected))
+
+(define-syntax-rule (check-expand-fully/both anchor input expected)
+  (check-expansion expand expand anchor input expected))
