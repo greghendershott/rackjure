@@ -121,11 +121,19 @@
     ;; 1. Directly; expanding ~> macro
     (check-expand-fully anchor
                         #'(~> 1 +)
-                        #'(#%app maybe-dict-ref + (quote 1)))
+                        #'(let-values ([(x_) +] [(y_) (quote 1)])
+                            (if (#%app procedure? x_)
+                                (let-values () (#%app x_ y_))
+                                (let-values () (#%app maybe-dict-ref x_ y_)))))
     ;; 2. Indirectly; no implicit require of wrong #%app
     (check-expand-fully anchor
                         #'((hasheq 'a 42) 'a)
-                        #'(#%app maybe-dict-ref
-                                 (#%app maybe-dict-set
-                                        hasheq (quote a) (quote 42)) (quote a))))
+                        #'(let-values ([(x_) (let-values ([(x_) hasheq] [(y_) (quote a)] [(z_) (quote 42)])
+                                               (if (#%app procedure? x_)
+                                                   (let-values () (#%app x_ y_ z_))
+                                                   (let-values () (#%app maybe-dict-set x_ y_ z_))))]
+                                       [(y_) (quote a)])
+                            (if (#%app procedure? x_)
+                                (let-values () (#%app x_ y_))
+                                (let-values () (#%app maybe-dict-ref x_ y_))))))
   (require 'test-dict-app))
