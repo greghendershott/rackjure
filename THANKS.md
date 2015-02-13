@@ -8,3 +8,4 @@ Thanks to the following people for contributing pull requests!
 - [parentheticaluniverse](https://github.com/parentheticaluniverse)
 - [technomancy](https://github.com/technomancy)
 - [AlexKnauth](https://github.com/AlexKnauth)
+- [gus-massa](https://github.com/gus-massa)
