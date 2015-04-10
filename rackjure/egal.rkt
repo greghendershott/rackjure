@@ -8,8 +8,8 @@
 (provide egal?)
 
 (module+ test
-  (require rackunit
-           racket))
+  (require (for-syntax racket/base)
+           rackunit))
 
 (define (egal? x y)
   (cond [(and (boolean? x) (boolean? y)) (eq? x y)]
