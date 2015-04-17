@@ -11,12 +11,16 @@
          make-lambda-readtable)
 
 (define (parse stx)
-  (with-syntax ([args (parse-args stx)]
-                [%1 (datum->syntax stx '%1 stx)]
-                [body stx])
-    #'(lambda args
-        (define-syntax % (make-rename-transformer #'%1))
-        body)))
+  (define intro (make-syntax-introducer))
+  (define stx* (intro stx))
+  (with-syntax ([args (parse-args stx*)]
+                [%  (datum->syntax stx* '%  stx*)]
+                [%1 (datum->syntax stx* '%1 stx*)]
+                [body stx*])
+    (intro
+     #'(lambda args
+         (define-syntax % (make-rename-transformer #'%1))
+         body))))
 
 (module+ test
   (require rackunit)
