@@ -3,7 +3,8 @@
 ;;; Tests of #%app (not convenient to put in app.rkt).
 
 (module+ test
-  (require rackunit)
+  (require rackunit
+           syntax/strip-context)
 
   ;; Application with the `dict` in first or second position
   (define d (hasheq 'a #t))
@@ -66,8 +67,11 @@
 
   ;; {} with odd number of elements raises exn:fail:syntax
   (check-exn exn:fail:syntax?
-             (thunk (eval #'(module m rackjure
-                              {0 1 2})))
+             (λ _
+               (parameterize ([current-namespace (make-base-namespace)])
+                 (eval (namespace-syntax-introduce
+                        (strip-context
+                         #'(module m rackjure {0 1 2}))))))
              "expected even number of keys and values for dictionary"))
 
 ;;; Tests of lambda reader macro not convenient to put in lambda-reader.rkt
