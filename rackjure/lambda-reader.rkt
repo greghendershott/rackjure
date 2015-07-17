@@ -1,6 +1,8 @@
 #lang racket/base
 
-(require (for-syntax racket/base)
+(require (for-syntax racket/base
+                     racket/list
+                     rackjure/threading)
          racket/match
          rackjure/threading
          (only-in racket/list filter-map remove-duplicates append*)
@@ -10,37 +12,61 @@
          lambda-readtable
          make-lambda-readtable)
 
+(define-syntax (define-unbindable-ids stx)
+  (syntax-case stx ()
+    [(_ [name id] ...)
+     (with-syntax ([(gen-id ...)
+                    (for/list ([id (in-list (syntax->list #'(id ...)))])
+                      (~> id syntax-e symbol->string string->uninterned-symbol))]
+                   [(n ...) (range -10 11)])
+       #'(begin
+           (require (for-meta n (only-in racket/base [id gen-id] ...))
+                    ...)
+           (define name (quote-syntax gen-id))
+           ...))]))
+
+(define-unbindable-ids
+  [lambda-id lambda]
+  [define-syntax-id define-syntax]
+  [app-id #%app]
+  [make-rename-transformer-id make-rename-transformer]
+  [syntax-id syntax])
+
 (define (parse stx)
-  (define intro (make-syntax-introducer))
-  (define stx* (intro stx))
-  (with-syntax ([args (parse-args stx*)]
-                [%  (datum->syntax stx* '%  stx*)]
-                [%1 (datum->syntax stx* '%1 stx*)]
-                [body stx*])
-    (intro
-     #'(lambda args
-         (define-syntax % (make-rename-transformer #'%1))
-         body))))
+  (with-syntax ([lambda lambda-id]
+                [define-syntax define-syntax-id]
+                [app app-id]
+                [make-rename-transformer make-rename-transformer-id]
+                [syntax syntax-id]
+                [args (parse-args stx)]
+                [%  (datum->syntax stx '%  stx)]
+                [%1 (datum->syntax stx '%1 stx)]
+                [body stx])
+    #`(lambda args
+        (define-syntax % (app make-rename-transformer #'%1))
+        body)))
 
 (module+ test
   (require rackunit)
+  (define-check (check-thing= a b)
+    (check-equal? (format "~s" a) (format "~s" b)))
   ;; These test `parse`. See test.rkt for tests of readtable use per se.
   (define chk (compose1 syntax->datum parse))
-  (check-equal? (chk #'(+))
+  (check-thing= (chk #'(+))
                 '(lambda ()
-                  (define-syntax % (make-rename-transformer #'%1))
+                  (define-syntax % (#%app make-rename-transformer #'%1))
                   (+)))
-  (check-equal? (chk #'(+ 2 %1 %1))
+  (check-thing= (chk #'(+ 2 %1 %1))
                 '(lambda (%1)
-                  (define-syntax % (make-rename-transformer #'%1))
+                  (define-syntax % (#%app make-rename-transformer #'%1))
                   (+ 2 %1 %1)))
-  (check-equal? (chk #'(+ 2 %3 %2 %1))
+  (check-thing= (chk #'(+ 2 %3 %2 %1))
                 '(lambda (%1 %2 %3)
-                  (define-syntax % (make-rename-transformer #'%1))
+                  (define-syntax % (#%app make-rename-transformer #'%1))
                   (+ 2 %3 %2 %1)))
-  (check-equal? (chk #'(apply list* % %&))
+  (check-thing= (chk #'(apply list* % %&))
                 '(lambda (%1 . %&)
-                  (define-syntax % (make-rename-transformer #'%1))
+                  (define-syntax % (#%app make-rename-transformer #'%1))
                   (apply list* % %&))))
 
 ;; parse-args : Stx -> KW-Formals-Stx
