@@ -4,14 +4,23 @@
          racket/match
          rackjure/threading
          (only-in racket/list filter-map remove-duplicates append*)
-         (only-in racket/port input-port-append))
+         (only-in racket/port input-port-append)
+         (only-in version/utils version<=?)
+         )
 
 (provide wrapper1
          lambda-readtable
-         make-lambda-readtable)
+         make-lambda-readtable
+         current-syntax-introducer
+         )
+
+(define current-syntax-introducer
+  (make-parameter
+   (λ (stx)
+     (error 'current-syntax-introducer "must be used within the rackjure reader"))))
 
 (define (parse stx)
-  (define intro (make-syntax-introducer))
+  (define intro (current-syntax-introducer))
   (define stx* (intro stx))
   (with-syntax ([args (parse-args stx*)]
                 [%  (datum->syntax stx* '%  stx*)]
@@ -23,9 +32,11 @@
          body))))
 
 (module+ test
-  (require rackunit)
+  (require rackunit racket/function)
   ;; These test `parse`. See test.rkt for tests of readtable use per se.
-  (define chk (compose1 syntax->datum parse))
+  (define (chk stx)
+    (parameterize ([current-syntax-introducer identity])
+      (syntax->datum (parse stx))))
   (check-equal? (chk #'(+))
                 '(lambda ()
                   (define-syntax % (make-rename-transformer #'%1))
@@ -132,5 +143,10 @@
 ;; A `#:wrapper1` for `syntax/module-reader`
 (define (wrapper1 thk)
   (define orig-readtable (current-readtable))
-  (parameterize ([current-readtable (make-lambda-readtable orig-readtable)])
-    (thk)))
+  (define intro (make-syntax-introducer))
+  (parameterize ([current-readtable (make-lambda-readtable orig-readtable)]
+                 [current-syntax-introducer intro])
+    (define stx (thk))
+    (if (and (syntax? stx) (version<=? "6.2.900.4" (version)))
+        (intro stx)
+        stx)))

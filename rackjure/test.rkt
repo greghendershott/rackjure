@@ -121,6 +121,8 @@
                 "used")       ;handles skipped arguments
   (check-equal? (apply #λ(list %1 %42) (build-list 42 add1))
                 (list 1 42))  ;handles an arbitrary number of arguments
+  (check-equal? (#λ(+ % 1) 0)
+                1)
   (check-equal? (let ([lambda "not lambda"] [define-syntax "not define-syntax"])
                   (#λ(+ % 1) 0))
                 1) ; lambda literals should work even if `lambda` is shadowed
