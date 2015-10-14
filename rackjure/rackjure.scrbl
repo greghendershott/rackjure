@@ -88,11 +88,9 @@ For example you can use just the threading macros @racket[~>] and
 
 @defmodule[rackjure/threading]
 
-@history[#:changed "0.9" "Instead of providing its own implementation,
-now provides all of the threading package."]
-
-The @racket[threading] package has additional features not described
-here. Please refer to its
+As of version 0.9, instead of providing its own implementation, this
+module now re-provides all of the @racket[threading] package, which
+has additional features not described here. Please refer to its
 @hyperlink["http://pkg-build.racket-lang.org/doc/threading/index.html"
 "documentation"].
 
