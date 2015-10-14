@@ -40,29 +40,7 @@ For example the threading macros are @racket[~>] and @racket[~>>]
 @racket[->] for contracts. Plus as Danny Yoo pointed out to me, @tt{~}
 is more "thready".
 
-As another example, the @tt{{}} dictionary literals let you use anything
-for a key, not just Clojure map @tt{:keyword}s.
-
 When it must choose, @tt{#lang rackjure} chooses to be more Rackety.
-
-@;--------------------------------------------------------------------
-
-@section{Installation}
-
-To install Rackjure with Racket 5.3.4 and newer:
-
-@codeblock{
-raco pkg install rackjure
-}
-
-On older versions of Racket (either you'll need Git or download the tarball
-and extract them manually):
-
-@codeblock{
-git clone https://github.com/greghendershott/rackjure.git
-raco link rackjure
-raco setup rackjure
-}
 
 @;--------------------------------------------------------------------
 @section{@tt{#lang rackjure} vs. @racket[require]}
@@ -109,6 +87,14 @@ For example you can use just the threading macros @racket[~>] and
 @section{Threading macros}
 
 @defmodule[rackjure/threading]
+
+@history[#:changed "0.9" "Instead of providing its own implementation,
+now provides all of the threading package."]
+
+The @racket[threading] package has additional features not described
+here. Please refer to its
+@hyperlink["http://pkg-build.racket-lang.org/doc/threading/index.html"
+"documentation"].
 
 @defform[(~> expression form ...)]{
 
@@ -614,10 +600,6 @@ Essentially it is:
           new
           (loop)))))
 ]
-
-@margin-note{This is implemented using @racket[box-cas!] introduced in
-Racket 5.92. On older versions of Racket, calling @racket[box-swap!]
-raises an error.}
 
 }
 
