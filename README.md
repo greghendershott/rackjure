@@ -9,6 +9,6 @@ Provide a few Clojure-inspired ideas in Racket.
 
 Where Racket and Clojure conflict, prefer Racket.
 
-[Documentation](http://www.greghendershott.com/rackjure/).
+[Documentation](http://pkg-build.racket-lang.org/doc/rackjure/index.html).
 
 [MIT license](https://github.com/greghendershott/rackjure/blob/master/rackjure/LICENSE).
