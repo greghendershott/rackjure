@@ -27,6 +27,8 @@
           (loop)))))
 
 (module+ test
+  (module config info
+    (define timeout 300))
   (require racket/future)
   (define shared (box 0))
   (define n-iterations 10000000)
