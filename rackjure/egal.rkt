@@ -31,7 +31,7 @@
 
 (define (egal-procedure? x y)
   ;; As far as I know, source/environment isn't available for procedures
-  #f)
+  (eq? x y))
 
 (define (egal-sequence? x y)
   (if (and (immutable? x) (immutable? y))
