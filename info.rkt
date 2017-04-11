@@ -1,10 +1,9 @@
-#lang setup/infotab
+#lang info
 (define version "0.9")
 (define collection 'multi)
-(define deps '(["racket" "6.0"]
-               "base"
+(define deps '(["base" #:version "6.1"]
                "rackunit-lib"
-               ["threading" "1.1"]))
+               ["threading" #:version "1.1"]))
 (define build-deps '("rackunit-lib"
                      "racket-doc"
                      "sandbox-lib"

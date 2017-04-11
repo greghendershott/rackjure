@@ -21,8 +21,6 @@ env:
     # Supply more than one RACKET_VERSION (as in the example below) to
     # create a Travis-CI build matrix to test against multiple Racket
     # versions.
-    - RACKET_VERSION=6.0
-    - RACKET_VERSION=6.0.1
     - RACKET_VERSION=6.1
     - RACKET_VERSION=6.1.1
     - RACKET_VERSION=6.2
@@ -53,8 +51,8 @@ install:
 before_script:
 
 script:
-  - cd ..   # Travis did a cd into the dir, cd back up
-  - raco pkg install --deps search-auto --link rackjure
-  - raco test -x -p rackjure
+  - make install
+  - make check-deps
+  - make test
 
 after_script:
