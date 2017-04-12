@@ -1,6 +1,11 @@
 PACKAGE-NAME=rackjure
 
-DEPS-FLAGS=--check-pkg-deps --unused-pkg-deps
+# Racket 6.1 adds pkg dep checking.
+ifeq ($(findstring "$(RACKET_VERSION)", "6.0", "6.0.1"),)
+	DEPS-FLAGS=--check-pkg-deps --unused-pkg-deps
+else
+	DEPS-FLAGS=
+endif
 
 all: setup
 
