@@ -23,11 +23,11 @@
   (require "check-expansion.rkt")
   (define-namespace-anchor anchor)
 
-  (check-expand-fully anchor #'(~> 1 (f 2))     #'(#%app f (quote 1) (quote 2)))
+  (check-expand-fully anchor #'(~> 1 (+ 2))     #'(#%app + (quote 1) (quote 2)))
   (check-expand-fully anchor #'(~> #t (if 1 2)) #'(if (quote #t) (quote 1) (quote 2)))
   ;; ^ Check that it works with syntax forms
 
-  (check-expand-fully anchor #'(~>> 1 (f 2))       #'(#%app f (quote 2) (quote 1)))
+  (check-expand-fully anchor #'(~>> 1 (+ 2))       #'(#%app + (quote 2) (quote 1)))
   (check-expand-fully anchor #'(~>> 1 + (~>> 1 +)) #'(#%app + '1 (#%app + '1)))
   ;; ^ Example from CLJ-1121
 
