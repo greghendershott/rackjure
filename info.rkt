@@ -7,4 +7,5 @@
 (define build-deps '("rackunit-lib"
                      "racket-doc"
                      "sandbox-lib"
-                     "scribble-lib"))
+                     "scribble-lib"
+                     "threading-doc"))
