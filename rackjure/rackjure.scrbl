@@ -89,10 +89,9 @@ For example you can use just the threading macros @racket[~>] and
 @defmodule[rackjure/threading]
 
 As of version 0.9, instead of providing its own implementation, this
-module now re-provides all of the @racket[threading] package, which
-has additional features not described here. Please refer to its
-@hyperlink["http://pkg-build.racket-lang.org/doc/threading/index.html"
-"documentation"].
+module now re-provides all of the @racketmodname[threading #:indirect]
+package, which has additional features not described here. Please
+refer to its documentation.
 
 @defform[(~> expression form ...)]{
 
