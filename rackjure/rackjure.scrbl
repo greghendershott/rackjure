@@ -16,10 +16,7 @@
                   [sandbox-error-output 'string])
      (make-evaluator 'rackjure)))
 
-@title{#lang rackjure}
-
-Provide a few Clojure-inspired ideas in Racket. Where Racket and
-Clojure conflict, prefer Racket.
+@title{rackjure}
 
 @hyperlink["https://github.com/greghendershott/rackjure" "Source"].
 
@@ -27,23 +24,25 @@ Clojure conflict, prefer Racket.
 
 @[table-of-contents]
 
-@section{Background/philosophy}
+@section{Introduction}
+
+This package provides a few Clojure-inspired ideas in Racket.
 
 Asumu Takikawa's
 @hyperlink["https://github.com/takikawa/racket-clojure" "#lang
-clojure"] showed me what's possible and is the basis for much of this.
-Why not just use that? Because I wanted to use some Clojure ideas in
+clojure"] showed me what's possible and was the original basis. Why
+not just use that? Because I wanted to use some Clojure ideas in
 Racket, not use Clojure.
 
+When it must choose, @tt{#lang rackjure} chooses to be more Rackety.
 For example the threading macros are @racket[~>] and @racket[~>>]
 (using @tt{~} instead of @tt{-}) because Racket already uses
 @racket[->] for contracts. Plus as Danny Yoo pointed out to me, @tt{~}
 is more "thready".
 
-When it must choose, @tt{#lang rackjure} chooses to be more Rackety.
 
 @;--------------------------------------------------------------------
-@section{@tt{#lang rackjure} vs. @racket[require]}
+@section{Using as a language vs. as a library}
 
 @defmodule[rackjure]
 
@@ -111,8 +110,8 @@ Like @racket[~>] but inserting as the @italic{last} item in each form.
 @linebreak[]
 
 The "threading" macros let you thread values through a series of
-applications in data-flow order. This can be a really refreshing way
-to express a series of transforms, instead of nested function calls.
+applications in data-flow order. Sometimes this is a clearer than
+deeply nested function calls.
 
 Although similar to the thrush combinator function (and you may hear
 them described that way), these are actually macros (in both Clojure
@@ -147,9 +146,9 @@ Or if you prefer on one line:
 ]
 
 Notice that @racket[bytes-length] and @racket[string->bytes/utf-8]
-aren't enclosed in parentheses. They could be, but if they're not, the
-@racket[~>] macro adds them automatically. A function that takes just one
-argument can be specified this way.
+aren't enclosed in parentheses. A function that takes just one
+argument can be specified this way: The @racket[~>] macro
+automatically adds the parentheses.
 
 @defform[(some~> expression form ...)]{
 
@@ -241,16 +240,11 @@ slightly differently than @racket[dict-ref]:
 1. We use an optional keyword argument, @racket[#:else]. This leaves
 arity 3 available to mean @racket[dict-set].
 
-2. If this arg isn't supplied and the key isn't found we return @racket[#f]
-(whereas @racket[dict-ref] raises an error). Returning @racket[#f] is
-more convenient, especially when used with threading macro
-@racket[~>]. It's smart that @racket[dict-ref] lets you supply a
-specific value to mean not-found, because what if @racket[#f] or
-@racket['not-found] or whatever could be a valid value in the
-dictionary? But it's even smarter to have not-found default to
-something other than raising an error. That way, the burden is only on
-code that needs to store @racket[#f] as values in a dict, and such
-code can use the @racket[#:else] keyword.
+2. If @racket[#:else] isn't supplied and the key isn't found we return
+@racket[#f] (whereas @racket[dict-ref] raises an error). Rationale:
+Returning @racket[#f] is more convenient when used with threading
+macros like @racket[some~>]. Admittedly, one person's "convenience" is
+another person's "magic behavior" and/or "latent bug".
 
 @;----------------------------------------------------------------------------
 @section[#:tag "dict-init"]{Dictionary initialization using @racket[{}]}
@@ -347,7 +341,7 @@ to be deleted from the returned dictionary.
 }
 
 @defparam[dict-merge-delete-value v any/c]{
-   
+
 Defaults to @racket['DELETE]. Used to tell @racket[dict-merge] that a
 key/value pair with that key should be deleted.
 
@@ -404,6 +398,8 @@ Returns a @tt{{}} @racket[style] string describing the @racket[dict]
 [#:sep sep ""]
 ) (and/c string? immutable?)]{
 
+@margin-note{Idiomatic Racket would probably use @racket[~a].}
+
 @racket[str] can be a succinct alternative to @racket[string-append]
 and/or @racket[format].
 
@@ -452,6 +448,8 @@ to @racket[""].}
 
 @defform[(if-let [identifier test-expr] then-expr else-expr)]{
 
+@margin-note{Idiomatic Racket would probably use @racket[match].}
+
 Combines @racket[if] and @racket[let]:
 
 @racketblock[
@@ -464,6 +462,8 @@ Combines @racket[if] and @racket[let]:
 }
 
 @defform[(when-let [identifier test-expr] body ...+)]{
+
+@margin-note{Idiomatic Racket would probably use @racket[match].}
 
 Combines @racket[when] with @racket[let]:
 
@@ -489,17 +489,12 @@ A shortcut for:
 
 @defform[(when-not test-expr body ...+)]{
 
+@margin-note{Idiomatic Racket would use @racket[unless].}
+
 A shortcut for:
 
 @racketblock[
 (when (not test-expr)
-  body ...)
-]
-
-However in colloquial Racket we'd simply use @racket[unless]:
-
-@racketblock[
-(unless test-expr
   body ...)
 ]
 
