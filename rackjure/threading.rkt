@@ -1,3 +1,6 @@
+;; Copyright (c) 2013-2022 by Greg Hendershott.
+;; SPDX-License-Identifier: BSD-2-Clause
+
 #lang racket/base
 
 ;; Originally this had its own implementation. Now we use depend on
